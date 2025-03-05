@@ -3,17 +3,32 @@ import {
   MeasurementFilter,
   MeasurementStats,
 } from "../types/measurement";
+import db from "../config/database";
+import {} from "module";
 
 export class MeasurementService {
-  // This is a placeholder implementation
-  // In a real application, this would interact with a database
-
   /**
    * Create a single measurement record
    */
   public async create(measurement: Measurement): Promise<void> {
-    // Implementation would store the measurement in a database
     console.log("Creating measurement:", measurement);
+
+    const query =
+      "INSERT INTO measurements (id, timestamp, value, meterID, type) VALUES (?, ?, ?, ?, ?);";
+    const values = [
+      measurement.id,
+      measurement.timestamp,
+      measurement.value,
+      measurement.meterID,
+      measurement.type,
+    ];
+
+    db.run(query, values),
+      (err: Error | null) => {
+        if (err) {
+          console.error("Error inserting data:", err.message);
+        }
+      };
   }
 
   /**
