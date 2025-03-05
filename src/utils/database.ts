@@ -13,17 +13,13 @@ export class Table {
 
   create(db: Database) {
     db.serialize(() => {
-      db.run(this.createQuery),
-        (err: Error | null) => {
-          if (err) {
-            console.error(
-              `Error creating table \'${this.name}\':`,
-              err.message
-            );
-          } else {
-            console.log(`Table \'${this.name}\' created succesfully.`);
-          }
-        };
+      db.run(this.createQuery, (err: Error | null) => {
+        if (err != null) {
+          console.error(`Error creating table '${this.name}':`, err.message);
+        } else {
+          console.log(`- Table '${this.name}' created successfully.`);
+        }
+      });
     });
   }
 }

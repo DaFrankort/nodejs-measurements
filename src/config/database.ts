@@ -1,8 +1,5 @@
-import sqlite3 from "sqlite3";
 import { Database } from "sqlite3";
 import { Table } from "../utils/database";
-
-sqlite3.verbose(); // TODO: delete, just for debugging purposes
 
 const db = new Database("db.sqlite");
 export default db;
