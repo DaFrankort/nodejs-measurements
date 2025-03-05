@@ -13,3 +13,5 @@ Some endpoints, like `POST /api/measurements`, may need to process large amounts
 #### SQLite for Database
 
 Since this API is relatively small and will not need to be scaled up down the line, I will use SQLite. Since it's easy to set up, most familiar to me, lightweight and doesn't require any external database hosting. If this API were to be bigger I would consider using PostgreSQL or MySQL since they're better suited for larger APIs.
+
+To use SQLite I have opted to use the `sqlite3` library, since this library is better for asynchronous operations. This allows me to easily implement multithreading if need-be.

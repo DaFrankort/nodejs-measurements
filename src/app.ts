@@ -3,6 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import { measurementRoutes } from "./routes/api";
+import "./config/database";
 
 export const app = express();
 
