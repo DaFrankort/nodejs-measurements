@@ -11,15 +11,13 @@ export class Table {
     this.createQuery = `CREATE TABLE IF NOT EXISTS ${this.name} (${queryFields});`;
   }
 
-  async create(db: Database): Promise<void> {
-    return new Promise<void>(() => {
-      db.run(this.createQuery, (err: Error | null) => {
-        if (err != null) {
-          console.error(`Error creating table '${this.name}':`, err.message);
-        } else {
-          console.log(`- Table '${this.name}' created successfully.`);
-        }
-      });
+  create(db: Database) {
+    db.run(this.createQuery, (err: Error | null) => {
+      if (err != null) {
+        console.error(`Error creating table '${this.name}':`, err.message);
+      } else {
+        console.log(`- Table '${this.name}' created successfully.`);
+      }
     });
   }
 }
