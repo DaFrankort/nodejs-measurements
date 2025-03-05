@@ -35,8 +35,36 @@ export class MeasurementService {
    * Create multiple measurement records
    */
   public async createMany(measurements: Measurement[]): Promise<void> {
-    // Implementation would store multiple measurements in a database
     console.log(`Creating ${measurements.length} measurements`);
+
+    const query =
+      "INSERT INTO measurements (id, timestamp, value, meterID, type) VALUES (?, ?, ?, ?, ?);";
+
+    db.serialize(() => {
+      const statement = db.prepare(query);
+
+      measurements.forEach((measurement) => {
+        const values = [
+          measurement.id,
+          measurement.timestamp,
+          measurement.value,
+          measurement.meterID,
+          measurement.type,
+        ];
+
+        statement.run(values, (err: Error | null) => {
+          if (err) {
+            console.error("Error inserting measurement:", err.message);
+          }
+        });
+      });
+
+      statement.finalize((err: Error | null) => {
+        if (err) {
+          console.error("Error finalizing statement:", err.message);
+        }
+      });
+    });
   }
 
   /**
