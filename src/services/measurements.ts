@@ -1,4 +1,8 @@
-import { Measurement, MeasurementFilter, MeasurementStats } from '../types/measurement';
+import {
+  Measurement,
+  MeasurementFilter,
+  MeasurementStats,
+} from "../types/measurement";
 
 export class MeasurementService {
   // This is a placeholder implementation
@@ -9,7 +13,7 @@ export class MeasurementService {
    */
   public async create(measurement: Measurement): Promise<void> {
     // Implementation would store the measurement in a database
-    console.log('Creating measurement:', measurement);
+    console.log("Creating measurement:", measurement);
   }
 
   /**
@@ -25,7 +29,7 @@ export class MeasurementService {
    */
   public async findAll(filter: MeasurementFilter): Promise<Measurement[]> {
     // Implementation would query the database with filters
-    console.log('Finding measurements with filter:', filter);
+    console.log("Finding measurements with filter:", filter);
     return [];
   }
 
@@ -34,13 +38,13 @@ export class MeasurementService {
    */
   public async getStats(filter: MeasurementFilter): Promise<MeasurementStats> {
     // Implementation would calculate statistics from database records
-    console.log('Calculating stats with filter:', filter);
+    console.log("Calculating stats with filter:", filter);
     return {
       count: 0,
       sum: 0,
       average: 0,
       min: 0,
-      max: 0
+      max: 0,
     };
   }
 }
