@@ -18,10 +18,11 @@ export class MeasurementService {
     const query = `INSERT INTO ${measurementTable.name} (id, timestamp, value, meterID, type) VALUES (?, ?, ?, ?, ?);`;
     const values = [measurement.id, measurement.timestamp, measurement.value, measurement.meterID, measurement.type];
 
-    this.db.run(query, values),
+    this.db.run(query, values), // TODO Return as promise, like the others
       (err: Error | null) => {
         if (err) {
           console.error("Error inserting data:", err.message);
+          return;
         }
       };
   }
@@ -34,29 +35,41 @@ export class MeasurementService {
 
     const query = `INSERT INTO ${measurementTable.name} (id, timestamp, value, meterID, type) VALUES (?, ?, ?, ?, ?);`;
 
-    this.db.serialize(() => {
-      const statement = this.db.prepare(query);
+    return new Promise((resolve, reject) => {
+      this.db.serialize(() => {
+        const statement = this.db.prepare(query);
+        const promises: Array<Promise<void>> = [];
 
-      for (const measurement of measurements) {
-        const values = [
-          measurement.id,
-          measurement.timestamp,
-          measurement.value,
-          measurement.meterID,
-          measurement.type,
-        ];
+        for (const measurement of measurements) {
+          const promise = new Promise<void>((resolve, reject) => {
+            statement.run(
+              [measurement.id, measurement.timestamp, measurement.value, measurement.meterID, measurement.type],
+              (err: Error | null) => {
+                if (err) {
+                  console.error("Error inserting measurement:", err.message);
+                  reject(err);
+                  return;
+                }
+                resolve();
+              }
+            );
+          });
 
-        statement.run(values, (err: Error | null) => {
-          if (err) {
-            console.error("Error inserting measurement:", err.message);
-          }
-        });
-      }
-
-      statement.finalize((err: Error | null) => {
-        if (err) {
-          console.error("Error finalizing statement:", err.message);
+          promises.push(promise);
         }
+
+        Promise.all(promises)
+          .then(() => {
+            statement.finalize((err: Error | null) => {
+              if (err) {
+                console.error("Error finalizing statement:", err.message);
+                reject(err);
+              } else {
+                resolve();
+              }
+            });
+          })
+          .catch(reject);
       });
     });
   }
@@ -88,6 +101,7 @@ export class MeasurementService {
     return new Promise((resolve, reject) => {
       this.db.all(query, queryValues, (err: Error | null, rows: Array<Measurement>) => {
         if (err) {
+          console.error("Error selecting data:", err.message);
           reject(err);
           return;
         }
@@ -105,7 +119,7 @@ export class MeasurementService {
     let queryValues: Array<any> = [];
 
     // Apply filters
-    const filterQueryParts = this.buildFilterQuery(filter);
+    const filterQueryParts = this.buildFilterQuery(filter); // TODO -> Refactor into a Query Class (?)
     if (filterQueryParts.conditions.length > 0) {
       query += " WHERE " + filterQueryParts.conditions.join(" AND ");
       queryValues.push(...filterQueryParts.values);
@@ -114,6 +128,7 @@ export class MeasurementService {
     return new Promise((resolve, reject) => {
       this.db.get(query, queryValues, (err: Error | null, row: any) => {
         if (err) {
+          console.error("Error selecting data:", err.message);
           reject(err);
           return;
         }
