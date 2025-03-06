@@ -86,7 +86,7 @@ export class MeasurementController {
       const message =
         measurements.length == 0 ? "No measurements found" : `Showing ${measurements.length} measurements.`;
 
-      res.status(201).json({
+      res.status(200).json({
         success: true,
         message: message,
         response: measurements,

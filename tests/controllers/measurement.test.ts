@@ -9,12 +9,13 @@ jest.mock("../../src/services/measurements", () => {
       return {
         create: jest.fn(),
         createMany: jest.fn(),
+        findAll: jest.fn(),
       };
     }),
   };
 });
 
-describe("MeasurementController create() function tests", () => {
+describe("MeasurementController create() tests", () => {
   /*** CONFIG ***/
   let db: Database;
   let measurementController: MeasurementController;
@@ -177,6 +178,237 @@ describe("MeasurementController create() function tests", () => {
         success: false,
         message: expect.any(String),
         errors: expect.any(Array),
+      })
+    );
+  });
+});
+
+describe("MeasurementController findAll() tests", () => {
+  /*** CONFIG ***/
+  let db: Database;
+  let measurementController: MeasurementController;
+  let mockRequest: Partial<Request> | any;
+  let mockResponse: Partial<Response> | any;
+  let mockMeasurementService: jest.Mocked<MeasurementService>;
+
+  beforeAll(() => {
+    db = new Database(":memory:");
+
+    mockMeasurementService = new MeasurementService(db) as jest.Mocked<MeasurementService>;
+    measurementController = new MeasurementController(mockMeasurementService);
+  });
+
+  beforeEach(() => {
+    mockRequest = {
+      body: {},
+    };
+
+    mockResponse = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn().mockReturnThis(),
+    };
+
+    mockMeasurementService.findAll.mockClear();
+    mockMeasurementService.findAll.mockResolvedValue(MeasurementSeeder.generateMany(3));
+  });
+
+  afterAll(() => {
+    db.close();
+    jest.clearAllMocks();
+  });
+
+  /*** TESTS ***/
+  it("should succesfully fetch data without filters and return status 200", async () => {
+    mockRequest.body = {};
+
+    await measurementController.findAll(mockRequest, mockResponse);
+
+    expect(mockMeasurementService.findAll).toHaveBeenCalled();
+    expect(mockResponse.status).toHaveBeenCalledWith(200);
+    expect(mockResponse.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: true,
+        message: expect.any(String),
+      })
+    );
+  });
+
+  // startDate tests
+  it("should succesfully fetch data with a valid startDate and return status 200", async () => {
+    mockRequest.body = { startDate: new Date().toISOString() };
+
+    await measurementController.findAll(mockRequest, mockResponse);
+
+    expect(mockMeasurementService.findAll).toHaveBeenCalled();
+    expect(mockResponse.status).toHaveBeenCalledWith(200);
+    expect(mockResponse.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: true,
+        message: expect.any(String),
+      })
+    );
+  });
+
+  it("should fail to fetch data with an invalid startDate and return status 400", async () => {
+    mockRequest.body = { startDate: new Date().toUTCString() };
+
+    await measurementController.findAll(mockRequest, mockResponse);
+
+    expect(mockMeasurementService.findAll).not.toHaveBeenCalled();
+    expect(mockResponse.status).toHaveBeenCalledWith(400);
+    expect(mockResponse.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: false,
+      })
+    );
+  });
+
+  // endDate tests
+  it("should succesfully fetch data with a valid endDate and return status 200", async () => {
+    mockRequest.body = { endDate: new Date().toISOString() };
+
+    await measurementController.findAll(mockRequest, mockResponse);
+
+    expect(mockMeasurementService.findAll).toHaveBeenCalled();
+    expect(mockResponse.status).toHaveBeenCalledWith(200);
+    expect(mockResponse.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: true,
+        message: expect.any(String),
+      })
+    );
+  });
+
+  it("should fail to fetch data with an invalid endDate and return status 400", async () => {
+    mockRequest.body = { endDate: new Date().toUTCString() };
+
+    await measurementController.findAll(mockRequest, mockResponse);
+
+    expect(mockMeasurementService.findAll).not.toHaveBeenCalled();
+    expect(mockResponse.status).toHaveBeenCalledWith(400);
+    expect(mockResponse.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: false,
+      })
+    );
+  });
+
+  // meterID tests
+  it("should succesfully fetch data with a valid meterID and return status 200", async () => {
+    mockRequest.body = { meterID: "ID123" };
+
+    await measurementController.findAll(mockRequest, mockResponse);
+
+    expect(mockMeasurementService.findAll).toHaveBeenCalled();
+    expect(mockResponse.status).toHaveBeenCalledWith(200);
+    expect(mockResponse.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: true,
+        message: expect.any(String),
+      })
+    );
+  });
+
+  it("should fail to fetch data with an invalid meterID and return status 400", async () => {
+    mockRequest.body = { meterID: 123 };
+
+    await measurementController.findAll(mockRequest, mockResponse);
+
+    expect(mockMeasurementService.findAll).not.toHaveBeenCalled();
+    expect(mockResponse.status).toHaveBeenCalledWith(400);
+    expect(mockResponse.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: false,
+      })
+    );
+  });
+
+  // type tests
+  it("should succesfully fetch data with a valid type and return status 200", async () => {
+    mockRequest.body = { type: "production" };
+
+    await measurementController.findAll(mockRequest, mockResponse);
+
+    expect(mockMeasurementService.findAll).toHaveBeenCalled();
+    expect(mockResponse.status).toHaveBeenCalledWith(200);
+    expect(mockResponse.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: true,
+        message: expect.any(String),
+      })
+    );
+  });
+
+  it("should fail to fetch data with an invalid type and return status 400", async () => {
+    mockRequest.body = { type: "not a valid type" };
+
+    await measurementController.findAll(mockRequest, mockResponse);
+
+    expect(mockMeasurementService.findAll).not.toHaveBeenCalled();
+    expect(mockResponse.status).toHaveBeenCalledWith(400);
+    expect(mockResponse.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: false,
+      })
+    );
+  });
+
+  // page tests
+  it("should succesfully fetch data with a valid page and return status 200", async () => {
+    mockRequest.body = { page: 1 };
+
+    await measurementController.findAll(mockRequest, mockResponse);
+
+    expect(mockMeasurementService.findAll).toHaveBeenCalled();
+    expect(mockResponse.status).toHaveBeenCalledWith(200);
+    expect(mockResponse.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: true,
+        message: expect.any(String),
+      })
+    );
+  });
+
+  it("should fail to fetch data with an invalid page and return status 400", async () => {
+    mockRequest.body = { page: "not a valid type" };
+
+    await measurementController.findAll(mockRequest, mockResponse);
+
+    expect(mockMeasurementService.findAll).not.toHaveBeenCalled();
+    expect(mockResponse.status).toHaveBeenCalledWith(400);
+    expect(mockResponse.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: false,
+      })
+    );
+  });
+
+  // limit tests
+  it("should succesfully fetch data with a valid limit and return status 200", async () => {
+    mockRequest.body = { limit: 25 };
+
+    await measurementController.findAll(mockRequest, mockResponse);
+
+    expect(mockMeasurementService.findAll).toHaveBeenCalled();
+    expect(mockResponse.status).toHaveBeenCalledWith(200);
+    expect(mockResponse.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: true,
+        message: expect.any(String),
+      })
+    );
+  });
+
+  it("should fail to fetch data with an invalid limit and return status 400", async () => {
+    mockRequest.body = { limit: "not a valid type" };
+
+    await measurementController.findAll(mockRequest, mockResponse);
+
+    expect(mockMeasurementService.findAll).not.toHaveBeenCalled();
+    expect(mockResponse.status).toHaveBeenCalledWith(400);
+    expect(mockResponse.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: false,
       })
     );
   });
