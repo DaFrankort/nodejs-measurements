@@ -11,7 +11,16 @@ export default db;
  * Create tables
  */
 export function initDatabaseTables() {
-  measurementTable.create(db);
-  // Add future tables here
-  console.log("Database setup complete.");
+  const tablePromises = [
+    measurementTable.create(db),
+    // Add future table create actions here
+  ];
+
+  Promise.all(tablePromises)
+    .then(() => {
+      console.log("Database setup complete.");
+    })
+    .catch((err) => {
+      console.error("Error setting up the database:", err);
+    });
 }
