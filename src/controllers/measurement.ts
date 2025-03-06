@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { MeasurementService } from "../services/measurements";
 import { validateMeasurement, validateMeasurementFilter, ValidationError } from "../utils/validators";
-import { Measurement } from "../types/measurement";
+import { Measurement, MeasurementStats } from "../types/measurement";
 
 export class MeasurementController {
   private measurementService: MeasurementService;
@@ -80,8 +80,8 @@ export class MeasurementController {
 
   public async findAll(req: Request, res: Response): Promise<void> {
     try {
-      const validFilter = validateMeasurementFilter(req.body);
-      const measurements: Array<Measurement> = await this.measurementService.findAll(validFilter);
+      const filter = validateMeasurementFilter(req.body, true);
+      const measurements: Array<Measurement> = await this.measurementService.findAll(filter);
 
       const message =
         measurements.length == 0 ? "No measurements found" : `Showing ${measurements.length} measurements.`;
@@ -90,6 +90,21 @@ export class MeasurementController {
         success: true,
         message: message,
         response: measurements,
+      });
+    } catch (error) {
+      this.handleErrorResponse(error, res);
+    }
+  }
+
+  public async getStats(req: Request, res: Response): Promise<void> {
+    try {
+      const filter = validateMeasurementFilter(req.body, false);
+      const stats: MeasurementStats = await this.measurementService.getStats(filter);
+
+      res.status(200).json({
+        success: true,
+        message: "Measurement statistics received succesfully",
+        response: stats,
       });
     } catch (error) {
       this.handleErrorResponse(error, res);
