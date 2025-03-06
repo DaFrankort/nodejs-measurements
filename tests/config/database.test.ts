@@ -1,5 +1,5 @@
 import { Database } from "sqlite3";
-import { Table } from "../src/utils/database";
+import { Table } from "../../src/utils/database";
 
 describe("SQLite Table Creation", () => {
   /*** CONFIG ***/
@@ -19,7 +19,7 @@ describe("SQLite Table Creation", () => {
     new Table("test", [
       "id INTEGER PRIMARY KEY",
       "string TEXT NOT NULL",
-      "real REAL NOT NULL",
+      "real REAL NOT NULL"
     ]).create(db);
 
     db.get("PRAGMA table_info(test);", (err, rows: any) => {
