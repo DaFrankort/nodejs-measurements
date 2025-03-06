@@ -1,10 +1,7 @@
 import { Database } from "sqlite3";
-import {
-  Measurement,
-  MeasurementFilter,
-  MeasurementStats,
-} from "../types/measurement";
+import { Measurement, MeasurementFilter, MeasurementStats } from "../types/measurement";
 import {} from "module";
+import { measurementTable } from "../models/measurement";
 
 export class MeasurementService {
   private db: Database;
@@ -19,15 +16,8 @@ export class MeasurementService {
   public async create(measurement: Measurement): Promise<void> {
     console.log("Creating measurement:", measurement);
 
-    const query =
-      "INSERT INTO measurements (id, timestamp, value, meterID, type) VALUES (?, ?, ?, ?, ?);";
-    const values = [
-      measurement.id,
-      measurement.timestamp,
-      measurement.value,
-      measurement.meterID,
-      measurement.type,
-    ];
+    const query = `INSERT INTO ${measurementTable.name} (id, timestamp, value, meterID, type) VALUES (?, ?, ?, ?, ?);`;
+    const values = [measurement.id, measurement.timestamp, measurement.value, measurement.meterID, measurement.type];
 
     this.db.run(query, values),
       (err: Error | null) => {
@@ -43,8 +33,7 @@ export class MeasurementService {
   public async createMany(measurements: Measurement[]): Promise<void> {
     console.log(`Creating ${measurements.length} measurements`);
 
-    const query =
-      "INSERT INTO measurements (id, timestamp, value, meterID, type) VALUES (?, ?, ?, ?, ?);";
+    const query = `INSERT INTO ${measurementTable.name} (id, timestamp, value, meterID, type) VALUES (?, ?, ?, ?, ?);`;
 
     this.db.serialize(() => {
       const statement = this.db.prepare(query);
