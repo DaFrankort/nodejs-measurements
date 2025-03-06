@@ -1,12 +1,18 @@
+import { Database } from "sqlite3";
 import {
   Measurement,
   MeasurementFilter,
   MeasurementStats,
 } from "../types/measurement";
-import db from "../config/database";
 import {} from "module";
 
 export class MeasurementService {
+  private db: Database;
+
+  constructor(db: Database) {
+    this.db = db;
+  }
+
   /**
    * Create a single measurement record
    */
@@ -23,7 +29,7 @@ export class MeasurementService {
       measurement.type,
     ];
 
-    db.run(query, values),
+    this.db.run(query, values),
       (err: Error | null) => {
         if (err) {
           console.error("Error inserting data:", err.message);
@@ -40,8 +46,8 @@ export class MeasurementService {
     const query =
       "INSERT INTO measurements (id, timestamp, value, meterID, type) VALUES (?, ?, ?, ?, ?);";
 
-    db.serialize(() => {
-      const statement = db.prepare(query);
+    this.db.serialize(() => {
+      const statement = this.db.prepare(query);
 
       measurements.forEach((measurement) => {
         const values = [
