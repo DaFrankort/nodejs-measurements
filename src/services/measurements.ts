@@ -1,6 +1,5 @@
 import { Database } from "sqlite3";
 import { Measurement, MeasurementFilter, MeasurementStats } from "../types/measurement";
-import {} from "module";
 import { measurementTable } from "../models/measurement";
 
 export class MeasurementService {
