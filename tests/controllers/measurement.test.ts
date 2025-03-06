@@ -14,7 +14,7 @@ jest.mock("../../src/services/measurements", () => {
   };
 });
 
-describe("SQLite Table Creation", () => {
+describe("MeasurementController create() function tests", () => {
   /*** CONFIG ***/
   let db: Database;
   let measurementController: MeasurementController;

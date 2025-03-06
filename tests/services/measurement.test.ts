@@ -4,7 +4,7 @@ import { MeasurementService } from "../../src/services/measurements";
 import { Measurement } from "../../src/types/measurement";
 import { MeasurementSeeder } from "../utils/seeders";
 
-describe("SQLite Table Creation", () => {
+describe("MeasurementService create() and createMany() tests", () => {
   /*** CONFIG ***/
   let db: Database;
   let measurementService: MeasurementService;
@@ -40,9 +40,7 @@ describe("SQLite Table Creation", () => {
     const measurements = MeasurementSeeder.generateMany(10);
 
     // Create all measurements and wait for them to be done
-    let promises: Array<Promise<void>> = measurements.map((measurement) =>
-      measurementService.create(measurement)
-    );
+    let promises: Array<Promise<void>> = measurements.map((measurement) => measurementService.create(measurement));
     await Promise.all(promises);
 
     for (const measurement of measurements) {
