@@ -18,7 +18,8 @@ export function initDatabaseTables() {
       "value REAL NOT NULL", // energy value (kWh)
       "meterID STRING NOT NULL", // Smart meter ID that took measurement
       "type TEXT NOT NULL", // Type of measurement (e.g., 'production', 'consumption')
-    ]),
+    ]), // Add future tables here
+    ,
   ];
 
   tables.forEach((table) => {
