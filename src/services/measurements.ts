@@ -1,27 +1,64 @@
-import {
-  Measurement,
-  MeasurementFilter,
-  MeasurementStats,
-} from "../types/measurement";
+import { Database } from "sqlite3";
+import { Measurement, MeasurementFilter, MeasurementStats } from "../types/measurement";
+import { measurementTable } from "../models/measurement";
 
 export class MeasurementService {
-  // This is a placeholder implementation
-  // In a real application, this would interact with a database
+  private db: Database;
+
+  constructor(db: Database) {
+    this.db = db;
+  }
 
   /**
    * Create a single measurement record
    */
   public async create(measurement: Measurement): Promise<void> {
-    // Implementation would store the measurement in a database
     console.log("Creating measurement:", measurement);
+
+    const query = `INSERT INTO ${measurementTable.name} (id, timestamp, value, meterID, type) VALUES (?, ?, ?, ?, ?);`;
+    const values = [measurement.id, measurement.timestamp, measurement.value, measurement.meterID, measurement.type];
+
+    this.db.run(query, values),
+      (err: Error | null) => {
+        if (err) {
+          console.error("Error inserting data:", err.message);
+        }
+      };
   }
 
   /**
    * Create multiple measurement records
    */
   public async createMany(measurements: Measurement[]): Promise<void> {
-    // Implementation would store multiple measurements in a database
     console.log(`Creating ${measurements.length} measurements`);
+
+    const query = `INSERT INTO ${measurementTable.name} (id, timestamp, value, meterID, type) VALUES (?, ?, ?, ?, ?);`;
+
+    this.db.serialize(() => {
+      const statement = this.db.prepare(query);
+
+      measurements.forEach((measurement) => {
+        const values = [
+          measurement.id,
+          measurement.timestamp,
+          measurement.value,
+          measurement.meterID,
+          measurement.type,
+        ];
+
+        statement.run(values, (err: Error | null) => {
+          if (err) {
+            console.error("Error inserting measurement:", err.message);
+          }
+        });
+      });
+
+      statement.finalize((err: Error | null) => {
+        if (err) {
+          console.error("Error finalizing statement:", err.message);
+        }
+      });
+    });
   }
 
   /**
