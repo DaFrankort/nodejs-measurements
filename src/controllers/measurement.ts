@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { MeasurementService } from "../services/measurements";
-import { validateMeasurement, ValidationError } from "../utils/validators";
+import { validateMeasurement, validateMeasurementFilter, ValidationError } from "../utils/validators";
 import { Measurement } from "../types/measurement";
 
 export class MeasurementController {
@@ -8,6 +8,16 @@ export class MeasurementController {
 
   constructor(measurementService: MeasurementService) {
     this.measurementService = measurementService;
+  }
+
+  private handleErrorResponse(error: unknown, res: Response): void {
+    if (error instanceof ValidationError) {
+      res.status(400).json({ success: false, message: error.message });
+      return;
+    }
+
+    console.error("Error finding measurements:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 
   // Create measurement(s)
@@ -64,16 +74,25 @@ export class MeasurementController {
         });
       }
     } catch (error) {
-      if (error instanceof ValidationError) {
-        res.status(400).json({ success: false, message: error.message });
-      } else {
-        console.error("Error creating measurement:", error);
-        res
-          .status(500)
-          .json({ success: false, message: "Internal server error" });
-      }
+      this.handleErrorResponse(error, res);
     }
   }
 
-  // Additional controller methods for GET endpoints...
+  public async findAll(req: Request, res: Response): Promise<void> {
+    try {
+      const validFilter = validateMeasurementFilter(req.body);
+      const measurements: Array<Measurement> = await this.measurementService.findAll(validFilter);
+
+      const message =
+        measurements.length == 0 ? "No measurements found" : `Showing ${measurements.length} measurements.`;
+
+      res.status(201).json({
+        success: true,
+        message: message,
+        response: measurements,
+      });
+    } catch (error) {
+      this.handleErrorResponse(error, res);
+    }
+  }
 }

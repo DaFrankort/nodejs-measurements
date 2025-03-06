@@ -1,4 +1,4 @@
-import { Measurement } from "../types/measurement";
+import { Measurement, MeasurementFilter } from "../types/measurement";
 import { v4 as uuidv4, validate as validateUuid } from "uuid";
 
 export class ValidationError extends Error {
@@ -8,6 +8,11 @@ export class ValidationError extends Error {
   }
 }
 
+function isValidISOTimestamp(timestamp: string) {
+  // Validate if is according to ISO 8601 standard.
+  return !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$/.test(timestamp);
+}
+
 export const validateMeasurement = (data: any): Measurement => {
   // Check if all required fields are present
   if (!data.timestamp || !data.value || !data.meterID || !data.type) {
@@ -15,14 +20,8 @@ export const validateMeasurement = (data: any): Measurement => {
   }
 
   // Validate timestamp format (ISO 8601)
-  if (
-    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$/.test(
-      data.timestamp
-    )
-  ) {
-    throw new ValidationError(
-      "Invalid timestamp format. Expected ISO 8601 format."
-    );
+  if (isValidISOTimestamp(data.timestamp)) {
+    throw new ValidationError("Invalid timestamp format. Expected ISO 8601 format.");
   }
 
   // Validate value is numeric and positive
@@ -32,14 +31,12 @@ export const validateMeasurement = (data: any): Measurement => {
 
   // Validate meter ID format
   if (typeof data.meterID !== "string" || data.meterID.trim() === "") {
-    throw new ValidationError("Invalid meter ID");
+    throw new ValidationError("Invalid meter ID, must be a string and may not contain spaces.");
   }
 
   // Validate measurement type
   if (!["production", "consumption"].includes(data.type)) {
-    throw new ValidationError(
-      'Type must be either "production" or "consumption"'
-    );
+    throw new ValidationError('Type must be either "production" or "consumption"');
   }
 
   // Generate an ID if not provided or validate existing one
@@ -55,4 +52,59 @@ export const validateMeasurement = (data: any): Measurement => {
     meterID: data.meterID,
     type: data.type as "production" | "consumption",
   };
+};
+
+export const validateMeasurementFilter = (data: any): MeasurementFilter => {
+  const filter: MeasurementFilter = {};
+
+  // Validate startDate timestamp format (ISO 8601), if startDate is given.
+  if (data.startDate) {
+    if (isValidISOTimestamp(data.startDate)) {
+      throw new ValidationError("Invalid timestamp format for startDate. Expected ISO 8601 format.");
+    }
+    filter.startDate = data.startDate;
+  }
+
+  // Validate endDate timestamp format (ISO 8601), if endDate is given.
+  if (data.endDate) {
+    if (isValidISOTimestamp(data.endDate)) {
+      throw new ValidationError("Invalid timestamp format for endDate. Expected ISO 8601 format.");
+    }
+    filter.endDate = data.endDate;
+  }
+
+  // Validate meter ID format, if meterID is given.
+  if (data.meterID) {
+    if (typeof data.meterID !== "string" || data.meterID.trim() === "") {
+      throw new ValidationError("Invalid meter ID, must be a string and may not contain spaces.");
+    }
+    filter.meterID = data.meterID;
+  }
+
+  // Validate measurement type, if data.type is given.
+  if (data.type) {
+    if (!["production", "consumption"].includes(data.type)) {
+      throw new ValidationError('Type must be either "production" or "consumption"');
+    }
+    filter.type = data.type;
+  }
+
+  // Validate page is numeric and positive, if page is given.
+  if (data.page) {
+    if (typeof data.page !== "number") {
+      throw new ValidationError("Page value must be a positive number");
+    }
+    filter.page = data.page;
+  }
+
+  // Validate limit is numeric and positive, if limit is given.
+  if (data.limit) {
+    if (typeof data.limit !== "number") {
+      throw new ValidationError("Limit value must be a positive number");
+    }
+    filter.limit = data.limit;
+  }
+
+  console.log(filter);
+  return filter;
 };
