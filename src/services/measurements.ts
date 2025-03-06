@@ -37,8 +37,7 @@ export class MeasurementService {
     this.db.serialize(() => {
       const statement = this.db.prepare(query);
 
-      // TODO Change forEach to for(measurement of measurements), more readable
-      measurements.forEach((measurement) => {
+      for (const measurement of measurements) {
         const values = [
           measurement.id,
           measurement.timestamp,
@@ -52,7 +51,7 @@ export class MeasurementService {
             console.error("Error inserting measurement:", err.message);
           }
         });
-      });
+      }
 
       statement.finalize((err: Error | null) => {
         if (err) {
@@ -67,23 +66,15 @@ export class MeasurementService {
    */
   public async findAll(filter: MeasurementFilter): Promise<Array<Measurement>> {
     console.log("Finding measurements with filter:", filter);
+
     let query = `SELECT * FROM ${measurementTable.name}`;
     let queryValues: Array<any> = [];
-    let queryStatements: Array<string> = [];
 
-    function addParameterToFilterIfExists(parameter: any, queryToAdd: string) {
-      if (parameter) {
-        queryStatements.push(queryToAdd);
-        queryValues.push(parameter);
-      }
-    }
-
-    addParameterToFilterIfExists(filter.startDate, "timestamp >= ?");
-    addParameterToFilterIfExists(filter.endDate, "timestamp <= ?");
-    addParameterToFilterIfExists(filter.meterID, "meterID = ?");
-    addParameterToFilterIfExists(filter.type, "type = ?");
-    if (queryStatements.length !== 0) {
-      query += " WHERE " + queryStatements.join(" AND ");
+    // Apply filters
+    const filterQueryParts = this.buildFilterQuery(filter);
+    if (filterQueryParts.conditions.length > 0) {
+      query += " WHERE " + filterQueryParts.conditions.join(" AND ");
+      queryValues.push(...filterQueryParts.values);
     }
 
     // Apply pagination
@@ -109,14 +100,56 @@ export class MeasurementService {
    * Get statistics for measurements matching the filter
    */
   public async getStats(filter: MeasurementFilter): Promise<MeasurementStats> {
-    // Implementation would calculate statistics from database records
     console.log("Calculating stats with filter:", filter);
-    return {
-      count: 0,
-      sum: 0,
-      average: 0,
-      min: 0,
-      max: 0,
+    let query = `SELECT COUNT(*) AS count, SUM(value) AS sum, AVG(value) AS average, MIN(value) AS min, MAX(value) AS max FROM ${measurementTable.name}`;
+    let queryValues: Array<any> = [];
+
+    // Apply filters
+    const filterQueryParts = this.buildFilterQuery(filter);
+    if (filterQueryParts.conditions.length > 0) {
+      query += " WHERE " + filterQueryParts.conditions.join(" AND ");
+      queryValues.push(...filterQueryParts.values);
+    }
+
+    return new Promise((resolve, reject) => {
+      this.db.get(query, queryValues, (err: Error | null, row: any) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        resolve({
+          count: row?.count ?? 0,
+          sum: row?.sum ?? 0,
+          average: row?.average ?? 0,
+          min: row?.min ?? 0,
+          max: row?.max ?? 0,
+        });
+      });
+    });
+  }
+
+  /**
+   * Helper functions
+   */
+  private buildFilterQuery(filter: MeasurementFilter): { conditions: string[]; values: any[] } {
+    const conditions: string[] = [];
+    const values: any[] = [];
+
+    const filterMapping: { [key: string]: any } = {
+      "timestamp >= ?": filter.startDate,
+      "timestamp <= ?": filter.endDate,
+      "meterID = ?": filter.meterID,
+      "type = ?": filter.type,
     };
+
+    for (const [condition, value] of Object.entries(filterMapping)) {
+      if (value !== undefined && value !== null) {
+        conditions.push(condition);
+        values.push(value);
+      }
+    }
+
+    return { conditions, values };
   }
 }
