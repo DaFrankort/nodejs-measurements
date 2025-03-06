@@ -14,12 +14,12 @@ export class MeasurementSeeder {
   }
 
   static generateMany(amount: number): Array<Measurement> {
-    let measurements: Array<Measurement> = [];
+    amount = Math.abs(amount); // Prevent negative values
 
+    let measurements: Array<Measurement> = [];
     for (let i = 0; i < amount; i++) {
       measurements.push(this.generate());
     }
-
     return measurements;
   }
 }
