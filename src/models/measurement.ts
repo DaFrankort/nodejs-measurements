@@ -1,3 +1,4 @@
+import { Measurement } from "../types/measurement";
 import { Table } from "../utils/database";
 
 export const measurementTable = new Table("measurements", [
@@ -7,3 +8,25 @@ export const measurementTable = new Table("measurements", [
   "meterID STRING NOT NULL", // Smart meter ID that took measurement
   "type TEXT NOT NULL", // Type of measurement (e.g., 'production', 'consumption')
 ]);
+
+export class MeasurementModel implements Measurement {
+  id: string;
+  timestamp: string;
+  value: number;
+  meterID: string;
+  type: "production" | "consumption";
+
+  constructor(
+    id: string,
+    timestamp: string,
+    value: number,
+    meterID: string,
+    type: "production" | "consumption"
+  ) {
+    this.id = id;
+    this.timestamp = timestamp;
+    this.value = value;
+    this.meterID = meterID;
+    this.type = type;
+  }
+}
