@@ -1,6 +1,6 @@
 import { Database } from "sqlite3";
 import { Measurement, MeasurementFilter, MeasurementStats } from "../types/measurement";
-import { measurementTable } from "../models/measurement";
+import { MeasurementQueryBuilder } from "../models/measurement";
 
 export class MeasurementService {
   private db: Database;
@@ -15,13 +15,14 @@ export class MeasurementService {
   public async create(measurement: Measurement): Promise<void> {
     console.log("Creating measurement:", measurement);
 
-    const query = `INSERT INTO ${measurementTable.name} (id, timestamp, value, meterID, type) VALUES (?, ?, ?, ?, ?);`;
-    const values = [measurement.id, measurement.timestamp, measurement.value, measurement.meterID, measurement.type];
+    const queryBuilder: MeasurementQueryBuilder = new MeasurementQueryBuilder();
+    queryBuilder.buildMeasurementInsert(measurement);
 
-    this.db.run(query, values),
+    this.db.run(queryBuilder.query, queryBuilder.values), // TODO Return as promise, like the others
       (err: Error | null) => {
         if (err) {
           console.error("Error inserting data:", err.message);
+          return;
         }
       };
   }
@@ -32,32 +33,43 @@ export class MeasurementService {
   public async createMany(measurements: Measurement[]): Promise<void> {
     console.log(`Creating ${measurements.length} measurements`);
 
-    const query = `INSERT INTO ${measurementTable.name} (id, timestamp, value, meterID, type) VALUES (?, ?, ?, ?, ?);`;
+    const queryBuilder: MeasurementQueryBuilder = new MeasurementQueryBuilder();
+    queryBuilder.buildMeasurementInsert(measurements[0]); // Need to create base query to create statement
 
-    this.db.serialize(() => {
-      const statement = this.db.prepare(query);
+    return new Promise((resolve, reject) => {
+      this.db.serialize(() => {
+        const statement = this.db.prepare(queryBuilder.query);
+        const promises: Array<Promise<void>> = [];
 
-      // TODO Change forEach to for(measurement of measurements), more readable
-      measurements.forEach((measurement) => {
-        const values = [
-          measurement.id,
-          measurement.timestamp,
-          measurement.value,
-          measurement.meterID,
-          measurement.type,
-        ];
+        for (const measurement of measurements) {
+          queryBuilder.buildMeasurementInsert(measurement);
 
-        statement.run(values, (err: Error | null) => {
-          if (err) {
-            console.error("Error inserting measurement:", err.message);
-          }
-        });
-      });
+          const promise = new Promise<void>((resolve, reject) => {
+            statement.run(queryBuilder.values, (err: Error | null) => {
+              if (err) {
+                console.error("Error inserting measurement:", err.message);
+                reject(err);
+                return;
+              }
+              resolve();
+            });
+          });
 
-      statement.finalize((err: Error | null) => {
-        if (err) {
-          console.error("Error finalizing statement:", err.message);
+          promises.push(promise);
         }
+
+        Promise.all(promises)
+          .then(() => {
+            statement.finalize((err: Error | null) => {
+              if (err) {
+                console.error("Error finalizing statement:", err.message);
+                reject(err);
+              } else {
+                resolve();
+              }
+            });
+          })
+          .catch(reject);
       });
     });
   }
@@ -67,36 +79,14 @@ export class MeasurementService {
    */
   public async findAll(filter: MeasurementFilter): Promise<Array<Measurement>> {
     console.log("Finding measurements with filter:", filter);
-    let query = `SELECT * FROM ${measurementTable.name}`;
-    let queryValues: Array<any> = [];
-    let queryStatements: Array<string> = [];
 
-    function addParameterToFilterIfExists(parameter: any, queryToAdd: string) {
-      if (parameter) {
-        queryStatements.push(queryToAdd);
-        queryValues.push(parameter);
-      }
-    }
+    const queryBuilder: MeasurementQueryBuilder = new MeasurementQueryBuilder();
+    queryBuilder.buildMeasurementSelect(filter);
 
-    addParameterToFilterIfExists(filter.startDate, "timestamp >= ?");
-    addParameterToFilterIfExists(filter.endDate, "timestamp <= ?");
-    addParameterToFilterIfExists(filter.meterID, "meterID = ?");
-    addParameterToFilterIfExists(filter.type, "type = ?");
-    if (queryStatements.length !== 0) {
-      query += " WHERE " + queryStatements.join(" AND ");
-    }
-
-    // Apply pagination
-    const page = filter.page ? filter.page : 1; // Default to page 1
-    const limit = filter.limit ? filter.limit : 50; // Default to 50 results per page
-    const offset = (page - 1) * limit;
-    query += " LIMIT ? OFFSET ?";
-    queryValues.push(limit, offset);
-
-    console.log("Executing query:", query, "with params:", queryValues);
     return new Promise((resolve, reject) => {
-      this.db.all(query, queryValues, (err: Error | null, rows: Array<Measurement>) => {
+      this.db.all(queryBuilder.query, queryBuilder.values, (err: Error | null, rows: Array<Measurement>) => {
         if (err) {
+          console.error("Error selecting data:", err.message);
           reject(err);
           return;
         }
@@ -109,14 +99,27 @@ export class MeasurementService {
    * Get statistics for measurements matching the filter
    */
   public async getStats(filter: MeasurementFilter): Promise<MeasurementStats> {
-    // Implementation would calculate statistics from database records
     console.log("Calculating stats with filter:", filter);
-    return {
-      count: 0,
-      sum: 0,
-      average: 0,
-      min: 0,
-      max: 0,
-    };
+
+    const queryBuilder: MeasurementQueryBuilder = new MeasurementQueryBuilder();
+    queryBuilder.buildStatsSelect(filter);
+
+    return new Promise((resolve, reject) => {
+      this.db.get(queryBuilder.query, queryBuilder.values, (err: Error | null, row: any) => {
+        if (err) {
+          console.error("Error selecting data:", err.message);
+          reject(err);
+          return;
+        }
+
+        resolve({
+          count: row?.count ?? 0,
+          sum: row?.sum ?? 0,
+          average: row?.average ?? 0,
+          min: row?.min ?? 0,
+          max: row?.max ?? 0,
+        });
+      });
+    });
   }
 }

@@ -54,7 +54,7 @@ export const validateMeasurement = (data: any): Measurement => {
   };
 };
 
-export const validateMeasurementFilter = (data: any): MeasurementFilter => {
+export const validateMeasurementFilter = (data: any, withPagination: boolean): MeasurementFilter => {
   const filter: MeasurementFilter = {};
 
   // Validate startDate timestamp format (ISO 8601), if startDate is given.
@@ -89,6 +89,11 @@ export const validateMeasurementFilter = (data: any): MeasurementFilter => {
     filter.type = data.type;
   }
 
+  /*** Validate Pagination ***/
+  if (!withPagination) {
+    return filter;
+  }
+
   // Validate page is numeric and positive, if page is given.
   if (data.page) {
     if (typeof data.page !== "number") {
@@ -105,6 +110,5 @@ export const validateMeasurementFilter = (data: any): MeasurementFilter => {
     filter.limit = data.limit;
   }
 
-  console.log(filter);
   return filter;
 };

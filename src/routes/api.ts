@@ -10,5 +10,6 @@ const measurementController = new MeasurementController(measurementService);
 // Measurement routes
 router.post("/measurements", (req, res) => measurementController.create(req, res));
 router.get("/measurements", (req, res) => measurementController.findAll(req, res));
+router.get("/measurements/stats", (req, res) => measurementController.getStats(req, res));
 
 export const measurementRoutes = router;
