@@ -40,6 +40,9 @@ describe("Measurement API Endpoints", () => {
   });
 
   test("GET /api/measurements should return all measurements", async () => {
+    const measurements: Array<Measurement> = MeasurementSeeder.generateMany(3);
+    mockService.findAll.mockResolvedValue(Promise.resolve(measurements));
+
     const filter: MeasurementFilter = {};
     const response = await request(app).get("/api/measurements").query(filter);
 
@@ -48,6 +51,9 @@ describe("Measurement API Endpoints", () => {
   });
 
   test("GET /api/measurements/stats should return aggregated stats", async () => {
+    const stats: MeasurementStats = { count: 0, sum: 10, average: 20, min: 30, max: 40 };
+    mockService.getStats.mockResolvedValue(Promise.resolve(stats));
+
     const filter: MeasurementFilter = {};
     const response = await request(app).get("/api/measurements/stats").query(filter);
 
