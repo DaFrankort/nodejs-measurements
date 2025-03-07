@@ -20,17 +20,10 @@ app.use(express.json());
 app.use("/api", measurementRoutes);
 
 // Error handling middleware
-app.use(
-  (
-    err: any,
-    _req: express.Request,
-    res: express.Response,
-    _next: express.NextFunction
-  ) => {
-    console.error(err.stack);
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
-  }
-);
+app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error(err.stack);
+  res.status(500).json({
+    success: false,
+    message: "Internal server error",
+  });
+});
