@@ -16,7 +16,7 @@ export class MeasurementController {
       return;
     }
 
-    console.error("Error finding measurements:", error);
+    console.error("Error finding data:", error);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 
@@ -83,9 +83,8 @@ export class MeasurementController {
       const filter = validateMeasurementFilter(req.body, true);
       const measurements: Array<Measurement> = await this.measurementService.findAll(filter);
 
-      const message =
-        measurements.length == 0 ? "No measurements found" : `Showing ${measurements.length} measurements.`;
-
+      const measurementCount = measurements ? measurements.length : 0;
+      const message = measurementCount === 0 ? "No measurements found" : `Showing ${measurementCount} measurements.`;
       res.status(200).json({
         success: true,
         message: message,

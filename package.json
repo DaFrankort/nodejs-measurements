@@ -27,6 +27,7 @@
         "@types/morgan": "^1.9.4",
         "@types/node": "^20.9.0",
         "@types/sqlite3": "^5.1.0",
+        "@types/supertest": "^6.0.2",
         "@types/uuid": "^9.0.7",
         "@typescript-eslint/eslint-plugin": "^6.10.0",
         "@typescript-eslint/parser": "^6.10.0",
