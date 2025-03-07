@@ -8,8 +8,7 @@ const measurementService = new MeasurementService(db);
 const measurementController = new MeasurementController(measurementService);
 
 // Measurement routes
-router.post("/measurements", (req, res) =>
-  measurementController.create(req, res)
-);
+router.post("/measurements", (req, res) => measurementController.create(req, res));
+router.get("/measurements", (req, res) => measurementController.findAll(req, res));
 
 export const measurementRoutes = router;

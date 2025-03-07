@@ -37,6 +37,7 @@ export class MeasurementService {
     this.db.serialize(() => {
       const statement = this.db.prepare(query);
 
+      // TODO Change forEach to for(measurement of measurements), more readable
       measurements.forEach((measurement) => {
         const values = [
           measurement.id,
@@ -64,10 +65,44 @@ export class MeasurementService {
   /**
    * Find measurements based on filters
    */
-  public async findAll(filter: MeasurementFilter): Promise<Measurement[]> {
-    // Implementation would query the database with filters
+  public async findAll(filter: MeasurementFilter): Promise<Array<Measurement>> {
     console.log("Finding measurements with filter:", filter);
-    return [];
+    let query = `SELECT * FROM ${measurementTable.name}`;
+    let queryValues: Array<any> = [];
+    let queryStatements: Array<string> = [];
+
+    function addParameterToFilterIfExists(parameter: any, queryToAdd: string) {
+      if (parameter) {
+        queryStatements.push(queryToAdd);
+        queryValues.push(parameter);
+      }
+    }
+
+    addParameterToFilterIfExists(filter.startDate, "timestamp >= ?");
+    addParameterToFilterIfExists(filter.endDate, "timestamp <= ?");
+    addParameterToFilterIfExists(filter.meterID, "meterID = ?");
+    addParameterToFilterIfExists(filter.type, "type = ?");
+    if (queryStatements.length !== 0) {
+      query += " WHERE " + queryStatements.join(" AND ");
+    }
+
+    // Apply pagination
+    const page = filter.page ? filter.page : 1; // Default to page 1
+    const limit = filter.limit ? filter.limit : 50; // Default to 50 results per page
+    const offset = (page - 1) * limit;
+    query += " LIMIT ? OFFSET ?";
+    queryValues.push(limit, offset);
+
+    console.log("Executing query:", query, "with params:", queryValues);
+    return new Promise((resolve, reject) => {
+      this.db.all(query, queryValues, (err: Error | null, rows: Array<Measurement>) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        resolve(rows);
+      });
+    });
   }
 
   /**
