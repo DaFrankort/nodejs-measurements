@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import { MeasurementService } from "../services/measurements";
-import { validateMeasurement, validateMeasurementFilter, ValidationError } from "../utils/validators";
+import { validateMeasurement, validateMeasurementFilter } from "../utils/validators";
 import { Measurement, MeasurementStats } from "../types/measurement";
+import { ValidationError } from "../utils/errors";
 
 export class MeasurementController {
   private measurementService: MeasurementService;

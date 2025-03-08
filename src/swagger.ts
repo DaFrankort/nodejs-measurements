@@ -38,8 +38,8 @@ const swaggerDefinition = {
           },
           meterID: {
             type: "string",
-            pattern: "^[^\\s]+$", // meterID must not contain spaces
-            description: "The ID of the meter (no spaces allowed)",
+            pattern: "^[^\\s]+$", // meterID must not contain whitespaces
+            description: "The ID of the meter (no whitespaces allowed)",
           },
           type: {
             type: "string",
