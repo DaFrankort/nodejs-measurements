@@ -9,22 +9,6 @@ export const MeasurementTable = new Table("measurements", [
   "type TEXT NOT NULL", // Type of measurement (e.g., 'production', 'consumption')
 ]);
 
-export class MeasurementModel implements Measurement {
-  id: string;
-  timestamp: string;
-  value: number;
-  meterID: string;
-  type: "production" | "consumption";
-
-  constructor(id: string, timestamp: string, value: number, meterID: string, type: "production" | "consumption") {
-    this.id = id;
-    this.timestamp = timestamp;
-    this.value = value;
-    this.meterID = meterID;
-    this.type = type;
-  }
-}
-
 export class MeasurementQueryBuilder {
   query: string;
   values: Array<any>;
