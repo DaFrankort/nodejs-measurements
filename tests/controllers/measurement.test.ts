@@ -18,6 +18,15 @@ jest.mock("../../src/services/measurements", () => {
   };
 });
 
+async function setupTestDatabaseAndController() {
+  const db = new Database(":memory:");
+
+  const mockMeasurementService = new MeasurementService(db) as jest.Mocked<MeasurementService>;
+  const measurementController = new MeasurementController(mockMeasurementService);
+
+  return { db, mockMeasurementService, measurementController };
+}
+
 describe("MeasurementController create() tests", () => {
   /*** CONFIG ***/
   let db: Database;
@@ -26,11 +35,8 @@ describe("MeasurementController create() tests", () => {
   let mockResponse: Partial<Response> | any;
   let mockMeasurementService: jest.Mocked<MeasurementService>;
 
-  beforeAll(() => {
-    db = new Database(":memory:");
-
-    mockMeasurementService = new MeasurementService(db) as jest.Mocked<MeasurementService>;
-    measurementController = new MeasurementController(mockMeasurementService);
+  beforeAll(async () => {
+    ({ db, mockMeasurementService, measurementController } = await setupTestDatabaseAndController());
   });
 
   beforeEach(() => {
@@ -194,11 +200,8 @@ describe("MeasurementController findAll() tests", () => {
   let mockResponse: Partial<Response> | any;
   let mockMeasurementService: jest.Mocked<MeasurementService>;
 
-  beforeAll(() => {
-    db = new Database(":memory:");
-
-    mockMeasurementService = new MeasurementService(db) as jest.Mocked<MeasurementService>;
-    measurementController = new MeasurementController(mockMeasurementService);
+  beforeAll(async () => {
+    ({ db, mockMeasurementService, measurementController } = await setupTestDatabaseAndController());
   });
 
   beforeEach(() => {
@@ -426,11 +429,8 @@ describe("MeasurementController getStats() tests", () => {
   let mockMeasurementService: jest.Mocked<MeasurementService>;
   let mockStats: MeasurementStats;
 
-  beforeAll(() => {
-    db = new Database(":memory:");
-
-    mockMeasurementService = new MeasurementService(db) as jest.Mocked<MeasurementService>;
-    measurementController = new MeasurementController(mockMeasurementService);
+  beforeAll(async () => {
+    ({ db, mockMeasurementService, measurementController } = await setupTestDatabaseAndController());
   });
 
   beforeEach(() => {
