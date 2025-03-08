@@ -50,6 +50,28 @@ function expectStatus400(res: Response) {
   );
 }
 
+function expectStatus200(res: Response, responseValue: any = null) {
+  expect(res.status).toHaveBeenCalledWith(200);
+
+  if (responseValue !== null) {
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: true,
+        message: expect.any(String),
+        response: responseValue,
+      })
+    );
+    return;
+  }
+
+  expect(res.json).toHaveBeenCalledWith(
+    expect.objectContaining({
+      success: true,
+      message: expect.any(String),
+    })
+  );
+}
+
 describe("MeasurementController create() tests", () => {
   /*** CONFIG ***/
   let db: Database;
@@ -215,13 +237,7 @@ describe("MeasurementController findAll() tests", () => {
     await measurementController.findAll(mockRequest, mockResponse);
 
     expect(mockMeasurementService.findAll).toHaveBeenCalled();
-    expect(mockResponse.status).toHaveBeenCalledWith(200);
-    expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: true,
-        message: expect.any(String),
-      })
-    );
+    expectStatus200(mockResponse);
   });
 
   // startDate tests
@@ -231,13 +247,7 @@ describe("MeasurementController findAll() tests", () => {
     await measurementController.findAll(mockRequest, mockResponse);
 
     expect(mockMeasurementService.findAll).toHaveBeenCalled();
-    expect(mockResponse.status).toHaveBeenCalledWith(200);
-    expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: true,
-        message: expect.any(String),
-      })
-    );
+    expectStatus200(mockResponse);
   });
 
   it("should fail to fetch data with an invalid startDate and return status 400", async () => {
@@ -256,13 +266,7 @@ describe("MeasurementController findAll() tests", () => {
     await measurementController.findAll(mockRequest, mockResponse);
 
     expect(mockMeasurementService.findAll).toHaveBeenCalled();
-    expect(mockResponse.status).toHaveBeenCalledWith(200);
-    expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: true,
-        message: expect.any(String),
-      })
-    );
+    expectStatus200(mockResponse);
   });
 
   it("should fail to fetch data with an invalid endDate and return status 400", async () => {
@@ -281,13 +285,7 @@ describe("MeasurementController findAll() tests", () => {
     await measurementController.findAll(mockRequest, mockResponse);
 
     expect(mockMeasurementService.findAll).toHaveBeenCalled();
-    expect(mockResponse.status).toHaveBeenCalledWith(200);
-    expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: true,
-        message: expect.any(String),
-      })
-    );
+    expectStatus200(mockResponse);
   });
 
   it("should fail to fetch data with an invalid meterID and return status 400", async () => {
@@ -306,13 +304,7 @@ describe("MeasurementController findAll() tests", () => {
     await measurementController.findAll(mockRequest, mockResponse);
 
     expect(mockMeasurementService.findAll).toHaveBeenCalled();
-    expect(mockResponse.status).toHaveBeenCalledWith(200);
-    expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: true,
-        message: expect.any(String),
-      })
-    );
+    expectStatus200(mockResponse);
   });
 
   it("should fail to fetch data with an invalid type and return status 400", async () => {
@@ -331,13 +323,7 @@ describe("MeasurementController findAll() tests", () => {
     await measurementController.findAll(mockRequest, mockResponse);
 
     expect(mockMeasurementService.findAll).toHaveBeenCalled();
-    expect(mockResponse.status).toHaveBeenCalledWith(200);
-    expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: true,
-        message: expect.any(String),
-      })
-    );
+    expectStatus200(mockResponse);
   });
 
   it("should fail to fetch data with an invalid page and return status 400", async () => {
@@ -356,13 +342,7 @@ describe("MeasurementController findAll() tests", () => {
     await measurementController.findAll(mockRequest, mockResponse);
 
     expect(mockMeasurementService.findAll).toHaveBeenCalled();
-    expect(mockResponse.status).toHaveBeenCalledWith(200);
-    expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: true,
-        message: expect.any(String),
-      })
-    );
+    expectStatus200(mockResponse);
   });
 
   it("should fail to fetch data with an invalid limit and return status 400", async () => {
@@ -414,14 +394,7 @@ describe("MeasurementController getStats() tests", () => {
     await measurementController.getStats(mockRequest, mockResponse);
 
     expect(mockMeasurementService.getStats).toHaveBeenCalled();
-    expect(mockResponse.status).toHaveBeenCalledWith(200);
-    expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: true,
-        message: expect.any(String),
-        response: mockStats,
-      })
-    );
+    expectStatus200(mockResponse, mockStats);
   });
 
   // // startDate tests
@@ -431,14 +404,7 @@ describe("MeasurementController getStats() tests", () => {
     await measurementController.getStats(mockRequest, mockResponse);
 
     expect(mockMeasurementService.getStats).toHaveBeenCalled();
-    expect(mockResponse.status).toHaveBeenCalledWith(200);
-    expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: true,
-        message: expect.any(String),
-        response: mockStats,
-      })
-    );
+    expectStatus200(mockResponse, mockStats);
   });
 
   it("should fail to fetch stats with an invalid startDate and return status 400", async () => {
@@ -457,14 +423,7 @@ describe("MeasurementController getStats() tests", () => {
     await measurementController.getStats(mockRequest, mockResponse);
 
     expect(mockMeasurementService.getStats).toHaveBeenCalled();
-    expect(mockResponse.status).toHaveBeenCalledWith(200);
-    expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: true,
-        message: expect.any(String),
-        response: mockStats,
-      })
-    );
+    expectStatus200(mockResponse, mockStats);
   });
 
   it("should fail to fetch stats with an invalid endDate and return status 400", async () => {
@@ -483,14 +442,7 @@ describe("MeasurementController getStats() tests", () => {
     await measurementController.getStats(mockRequest, mockResponse);
 
     expect(mockMeasurementService.getStats).toHaveBeenCalled();
-    expect(mockResponse.status).toHaveBeenCalledWith(200);
-    expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: true,
-        message: expect.any(String),
-        response: mockStats,
-      })
-    );
+    expectStatus200(mockResponse, mockStats);
   });
 
   it("should fail to fetch stats with an invalid meterID and return status 400", async () => {
@@ -509,14 +461,7 @@ describe("MeasurementController getStats() tests", () => {
     await measurementController.getStats(mockRequest, mockResponse);
 
     expect(mockMeasurementService.getStats).toHaveBeenCalled();
-    expect(mockResponse.status).toHaveBeenCalledWith(200);
-    expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: true,
-        message: expect.any(String),
-        response: mockStats,
-      })
-    );
+    expectStatus200(mockResponse, mockStats);
   });
 
   it("should fail to fetch stats with an invalid type and return status 400", async () => {
