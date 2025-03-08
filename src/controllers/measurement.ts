@@ -10,7 +10,7 @@ export class MeasurementController {
     this.measurementService = measurementService;
   }
 
-  private handleErrorResponse(error: unknown, res: Response): void {
+  private handleErrorResponse(error: Error | null, res: Response): void {
     if (error instanceof ValidationError) {
       res.status(400).json({ success: false, message: error.message });
       return;
@@ -73,7 +73,7 @@ export class MeasurementController {
           id: validMeasurement.id,
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       this.handleErrorResponse(error, res);
     }
   }
@@ -90,7 +90,7 @@ export class MeasurementController {
         message: message,
         response: measurements,
       });
-    } catch (error) {
+    } catch (error: any) {
       this.handleErrorResponse(error, res);
     }
   }
@@ -105,7 +105,7 @@ export class MeasurementController {
         message: "Measurement statistics received succesfully",
         response: stats,
       });
-    } catch (error) {
+    } catch (error: any) {
       this.handleErrorResponse(error, res);
     }
   }
