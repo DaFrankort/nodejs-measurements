@@ -64,7 +64,16 @@ function expectMeasurementStats(
   expect(stats.max).toBe(max);
 }
 
-describe("MeasurementService create() tests", () => {
+const getExpectedStats = (filteredMeasurements: Measurement[]) => {
+  const sum = filteredMeasurements.reduce((acc, m) => acc + m.value, 0);
+  const average = sum / (filteredMeasurements.length || 1);
+  const min = filteredMeasurements.length ? filteredMeasurements[0].value : 0;
+  const max = filteredMeasurements.length ? filteredMeasurements[filteredMeasurements.length - 1].value : 0;
+
+  return { count: filteredMeasurements.length, sum, average, min, max };
+};
+
+describe("MeasurementService create()", () => {
   /*** CONFIG ***/
   let db: Database;
   let measurementService: MeasurementService;
@@ -88,7 +97,7 @@ describe("MeasurementService create() tests", () => {
   });
 });
 
-describe("MeasurementService createMany() tests", () => {
+describe("MeasurementService createMany()", () => {
   /*** CONFIG ***/
   let db: Database;
   let measurementService: MeasurementService;
@@ -116,7 +125,7 @@ describe("MeasurementService createMany() tests", () => {
   });
 });
 
-describe("MeasurementService findAll() tests", () => {
+describe("MeasurementService findAll()", () => {
   /*** CONFIG ***/
   let db: Database;
   let measurementService: MeasurementService;
@@ -142,85 +151,54 @@ describe("MeasurementService findAll() tests", () => {
     expect(foundMeasurements.length).toBeGreaterThan(0);
   });
 
-  // startDate tests
-  it("should retrieve results AFTER startDate", async () => {
-    const filter: MeasurementFilter = { startDate: getISODateYearAgo() };
-    const foundMeasurements: Array<Measurement> = await measurementService.findAll(filter);
+  describe("Filtered stats retrieval", () => {
+    test.each([
+      ["AFTER startDate", { startDate: getISODateYearAgo() }, true],
+      ["BEFORE startDate", { startDate: getISODateNextYear() }, false],
+      ["BEFORE endDate", { endDate: getISODateNextYear() }, true],
+      ["AFTER endDate", { endDate: getISODateYearAgo() }, false],
+    ])("should retrieve results %s", async (_, filter, shouldFind) => {
+      const foundMeasurements = await measurementService.findAll(filter);
+      expect(foundMeasurements.length > 0).toBe(shouldFind);
+    });
 
-    expect(foundMeasurements.length).toBeGreaterThan(0);
+    it("should only return measurements with the matching meterID", async () => {
+      const meterID = measurements[0].meterID;
+      const foundMeasurements = await measurementService.findAll({ meterID });
+
+      expect(foundMeasurements.every((m) => m.meterID === meterID)).toBe(true);
+    });
+
+    it("should only return measurements with the matching type", async () => {
+      const type = measurements[0].type;
+      const foundMeasurements = await measurementService.findAll({ type });
+
+      expect(foundMeasurements.every((m) => m.type === type)).toBe(true);
+    });
   });
 
-  it("should not retrieve results BEFORE startDate", async () => {
-    const filter: MeasurementFilter = { startDate: getISODateNextYear() };
-    const foundMeasurements: Array<Measurement> = await measurementService.findAll(filter);
+  describe("Pagination and Limits", () => {
+    it("should return different results on different pages", async () => {
+      const limit = Math.ceil(measurements.length / 4);
 
-    expect(foundMeasurements.length).toBeLessThan(measurements.length);
-    expect(foundMeasurements.length).toBe(0);
-  });
+      const page1 = await measurementService.findAll({ page: 1, limit });
+      const page2 = await measurementService.findAll({ page: 2, limit });
 
-  // endDate tests
-  it("should retrieve results BEFORE endDate", async () => {
-    const filter: MeasurementFilter = { endDate: getISODateNextYear() };
-    const foundMeasurements: Array<Measurement> = await measurementService.findAll(filter);
+      expect(page1.length).toBeGreaterThan(0);
+      expect(page2.length).toBeGreaterThan(0);
+      expect(page1).not.toEqual(page2);
+    });
 
-    expect(foundMeasurements.length).toBeGreaterThan(0);
-  });
+    it("should limit the number of results", async () => {
+      const limit = Math.ceil(measurements.length / 4);
+      const foundMeasurements = await measurementService.findAll({ limit });
 
-  it("should not retrieve results AFTER endDate", async () => {
-    const filter: MeasurementFilter = { endDate: getISODateYearAgo() };
-    const foundMeasurements: Array<Measurement> = await measurementService.findAll(filter);
-
-    expect(foundMeasurements.length).toBeLessThan(measurements.length);
-    expect(foundMeasurements.length).toBe(0);
-  });
-
-  // meterID tests
-  it("should only return measurements with the matching meterID", async () => {
-    const meterID = measurements[0].meterID;
-    const filter: MeasurementFilter = { meterID: meterID };
-    const foundMeasurements: Array<Measurement> = await measurementService.findAll(filter);
-
-    expect(foundMeasurements.length).toBeLessThan(measurements.length);
-    for (const measurement of foundMeasurements) {
-      expect(measurement.meterID).toBe(meterID);
-    }
-  });
-
-  // type tests
-  it("should only return measurements with the matching type", async () => {
-    const type = measurements[0].type;
-    const filter: MeasurementFilter = { type: type };
-    const foundMeasurements: Array<Measurement> = await measurementService.findAll(filter);
-
-    expect(foundMeasurements.length).toBeLessThan(measurements.length);
-    for (const measurement of foundMeasurements) {
-      expect(measurement.type).toBe(type);
-    }
-  });
-
-  // page tests
-  it("should show different results on different pages.", async () => {
-    const limit = Math.ceil(measurements.length / 4);
-
-    const firstMeasurements: Array<Measurement> = await measurementService.findAll({ page: 1, limit: limit });
-    const secondMeasurements: Array<Measurement> = await measurementService.findAll({ page: 2, limit: limit });
-
-    expect(firstMeasurements.length).toBeGreaterThan(0);
-    expect(secondMeasurements.length).toBeGreaterThan(0);
-    expect(firstMeasurements).not.toEqual(secondMeasurements);
-  });
-
-  // limit tests
-  it("should limit the amount of results depending on the limit filter", async () => {
-    const limit = Math.ceil(measurements.length / 4);
-    const filter: MeasurementFilter = { limit: limit };
-    const foundMeasurements: Array<Measurement> = await measurementService.findAll(filter);
-
-    expect(foundMeasurements.length).toBeLessThanOrEqual(limit);
+      expect(foundMeasurements.length).toBeLessThanOrEqual(limit);
+    });
   });
 });
 
-describe("MeasurementService findAll() tests", () => {
+describe("MeasurementService getStats()", () => {
   /*** CONFIG ***/
   let db: Database;
   let measurementService: MeasurementService;
@@ -246,9 +224,8 @@ describe("MeasurementService findAll() tests", () => {
   });
 
   /*** TESTS ***/
-  it("should succesfully retrieve stats from the database without filters", async () => {
-    const filter: MeasurementFilter = {};
-    const stats: MeasurementStats = await measurementService.getStats(filter);
+  it("should successfully retrieve stats from the database without filters", async () => {
+    const stats = await measurementService.getStats({});
 
     expectMeasurementStats(
       stats,
@@ -260,79 +237,38 @@ describe("MeasurementService findAll() tests", () => {
     );
   });
 
-  // startDate tests
-  it("should retrieve stats AFTER startDate", async () => {
-    const filter: MeasurementFilter = { startDate: getISODateYearAgo() };
-    const stats: MeasurementStats = await measurementService.getStats(filter);
+  describe("Filtered stats retrieval", () => {
+    test.each([
+      ["AFTER startDate", { startDate: getISODateYearAgo() }, () => measurements],
+      ["BEFORE endDate", { endDate: getISODateNextYear() }, () => measurements],
+      ["NO results AFTER endDate", { endDate: getISODateYearAgo() }, () => []],
+      ["NO results BEFORE startDate", { startDate: getISODateNextYear() }, () => []],
+    ])("should retrieve stats %s", async (_, filter, expectedFn) => {
+      const expected = expectedFn();
+      const { count, sum, average, min, max } = getExpectedStats(expected);
+      const stats = await measurementService.getStats(filter);
 
-    expectMeasurementStats(
-      stats,
-      measurements.length,
-      expectedSum,
-      expectedAverage,
-      measurements[0].value,
-      measurements[measurements.length - 1].value
-    );
-  });
+      expectMeasurementStats(stats, count, sum, average, min, max);
+    });
 
-  it("should not retrieve stats BEFORE startDate", async () => {
-    const filter: MeasurementFilter = { startDate: getISODateNextYear() };
-    const stats: MeasurementStats = await measurementService.getStats(filter);
+    it("should only return stats for the matching meterID", async () => {
+      const meterID = measurements[0].meterID;
+      const filteredMeasurements = measurements.filter((m) => m.meterID === meterID);
+      const { count, sum, average, min, max } = getExpectedStats(filteredMeasurements);
 
-    expectMeasurementStats(stats, 0, 0, 0, 0, 0);
-  });
+      const stats = await measurementService.getStats({ meterID });
 
-  // // endDate tests
-  it("should retrieve stats BEFORE endDate", async () => {
-    const filter: MeasurementFilter = { endDate: getISODateNextYear() };
-    const stats: MeasurementStats = await measurementService.getStats(filter);
+      expectMeasurementStats(stats, count, sum, average, min, max);
+    });
 
-    expectMeasurementStats(
-      stats,
-      measurements.length,
-      expectedSum,
-      expectedAverage,
-      measurements[0].value,
-      measurements[measurements.length - 1].value
-    );
-  });
+    it("should only return stats for the matching type", async () => {
+      const type = measurements[0].type;
+      const filteredMeasurements = measurements.filter((m) => m.type === type);
+      const { count, sum, average, min, max } = getExpectedStats(filteredMeasurements);
 
-  it("should not retrieve stats AFTER endDate", async () => {
-    const filter: MeasurementFilter = { endDate: getISODateYearAgo() };
-    const stats: MeasurementStats = await measurementService.getStats(filter);
+      const stats = await measurementService.getStats({ type });
 
-    expectMeasurementStats(stats, 0, 0, 0, 0, 0);
-  });
-
-  // // meterID tests
-  it("should only return stats for the matching meterID", async () => {
-    const meterID = measurements[0].meterID;
-    const filter: MeasurementFilter = { meterID: meterID };
-    const stats: MeasurementStats = await measurementService.getStats(filter);
-
-    // Since seeded meterIDs are unique, we can safely assume there are only get stats of one measurement.
-    const measurementValue = measurements[0].value;
-    expectMeasurementStats(stats, 1, measurementValue, measurementValue, measurementValue, measurementValue);
-  });
-
-  // type tests
-  it("should only return stats for the matching type", async () => {
-    const type = measurements[0].type;
-    const filter: MeasurementFilter = { type: type };
-    const stats: MeasurementStats = await measurementService.getStats(filter);
-
-    // Prepare expected values
-    let expectedMeasurements: Array<Measurement> = [];
-    for (const measurement of measurements) {
-      if (measurement.type == type) {
-        expectedMeasurements.push(measurement);
-      }
-    }
-    const sum = expectedMeasurements.reduce((sum, m) => sum + m.value, 0);
-    const average = sum / expectedMeasurements.length;
-    const min = expectedMeasurements[0].value;
-    const max = expectedMeasurements[expectedMeasurements.length - 1].value;
-
-    expectMeasurementStats(stats, expectedMeasurements.length, sum, average, min, max);
+      expectMeasurementStats(stats, count, sum, average, min, max);
+    });
   });
 });
