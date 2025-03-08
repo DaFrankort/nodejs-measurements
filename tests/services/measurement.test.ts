@@ -4,6 +4,9 @@ import { MeasurementService } from "../../src/services/measurements";
 import { Measurement, MeasurementFilter, MeasurementStats } from "../../src/types/measurement";
 import { MeasurementSeeder } from "../utils/seeders";
 
+/*
+ * Helper functions
+ */
 async function setupTestDatabase() {
   const db = new Database(":memory:");
   await measurementTable.create(db);
@@ -12,12 +15,53 @@ async function setupTestDatabase() {
   return { db, measurementService };
 }
 
+async function getMeasurementRow(db: Database, measurement: Measurement) {
+  return await new Promise<Measurement>((resolve, reject) => {
+    db.get(
+      `SELECT * FROM ${measurementTable.name} WHERE id = ?`,
+      [measurement.id],
+      (err: Error | null, rows: Measurement) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(rows);
+        }
+      }
+    );
+  });
+}
+
+function getISODateYearAgo() {
+  const dateYearAgo = new Date(new Date().setFullYear(new Date().getFullYear() - 1));
+  return dateYearAgo.toISOString();
+}
+
+function getISODateNextYear() {
+  const dateYearAgo = new Date(new Date().setFullYear(new Date().getFullYear() + 1));
+  return dateYearAgo.toISOString();
+}
+
 function expectMeasurementRow(row: Measurement, measurement: Measurement) {
   expect(row.id).toBe(measurement.id);
   expect(row.meterID).toBe(measurement.meterID);
   expect(row.timestamp).toBe(measurement.timestamp);
   expect(row.type).toBe(measurement.type);
   expect(row.value).toBe(measurement.value);
+}
+
+function expectMeasurementStats(
+  stats: MeasurementStats,
+  count: number,
+  sum: number,
+  average: number,
+  min: number,
+  max: number
+) {
+  expect(stats.count).toBe(count);
+  expect(stats.sum).toBe(sum);
+  expect(stats.average).toBe(average);
+  expect(stats.min).toBe(min);
+  expect(stats.max).toBe(max);
 }
 
 describe("MeasurementService create() tests", () => {
@@ -206,11 +250,14 @@ describe("MeasurementService findAll() tests", () => {
     const filter: MeasurementFilter = {};
     const stats: MeasurementStats = await measurementService.getStats(filter);
 
-    expect(stats.count).toBe(measurements.length);
-    expect(stats.sum).toBeCloseTo(expectedSum);
-    expect(stats.average).toBeCloseTo(expectedAverage);
-    expect(stats.min).toBe(measurements[0].value);
-    expect(stats.max).toBe(measurements[measurements.length - 1].value);
+    expectMeasurementStats(
+      stats,
+      measurements.length,
+      expectedSum,
+      expectedAverage,
+      measurements[0].value,
+      measurements[measurements.length - 1].value
+    );
   });
 
   // startDate tests
@@ -218,22 +265,21 @@ describe("MeasurementService findAll() tests", () => {
     const filter: MeasurementFilter = { startDate: getISODateYearAgo() };
     const stats: MeasurementStats = await measurementService.getStats(filter);
 
-    expect(stats.count).toBe(measurements.length);
-    expect(stats.sum).toBeCloseTo(expectedSum);
-    expect(stats.average).toBeCloseTo(expectedAverage);
-    expect(stats.min).toBe(measurements[0].value);
-    expect(stats.max).toBe(measurements[measurements.length - 1].value);
+    expectMeasurementStats(
+      stats,
+      measurements.length,
+      expectedSum,
+      expectedAverage,
+      measurements[0].value,
+      measurements[measurements.length - 1].value
+    );
   });
 
   it("should not retrieve stats BEFORE startDate", async () => {
     const filter: MeasurementFilter = { startDate: getISODateNextYear() };
     const stats: MeasurementStats = await measurementService.getStats(filter);
 
-    expect(stats.count).toBe(0);
-    expect(stats.sum).toBe(0);
-    expect(stats.average).toBe(0);
-    expect(stats.min).toBe(0);
-    expect(stats.max).toBe(0);
+    expectMeasurementStats(stats, 0, 0, 0, 0, 0);
   });
 
   // // endDate tests
@@ -241,22 +287,21 @@ describe("MeasurementService findAll() tests", () => {
     const filter: MeasurementFilter = { endDate: getISODateNextYear() };
     const stats: MeasurementStats = await measurementService.getStats(filter);
 
-    expect(stats.count).toBe(measurements.length);
-    expect(stats.sum).toBeCloseTo(expectedSum);
-    expect(stats.average).toBeCloseTo(expectedAverage);
-    expect(stats.min).toBe(measurements[0].value);
-    expect(stats.max).toBe(measurements[measurements.length - 1].value);
+    expectMeasurementStats(
+      stats,
+      measurements.length,
+      expectedSum,
+      expectedAverage,
+      measurements[0].value,
+      measurements[measurements.length - 1].value
+    );
   });
 
   it("should not retrieve stats AFTER endDate", async () => {
     const filter: MeasurementFilter = { endDate: getISODateYearAgo() };
     const stats: MeasurementStats = await measurementService.getStats(filter);
 
-    expect(stats.count).toBe(0);
-    expect(stats.sum).toBe(0);
-    expect(stats.average).toBe(0);
-    expect(stats.min).toBe(0);
-    expect(stats.max).toBe(0);
+    expectMeasurementStats(stats, 0, 0, 0, 0, 0);
   });
 
   // // meterID tests
@@ -267,11 +312,7 @@ describe("MeasurementService findAll() tests", () => {
 
     // Since seeded meterIDs are unique, we can safely assume there are only get stats of one measurement.
     const measurementValue = measurements[0].value;
-    expect(stats.count).toBe(1);
-    expect(stats.sum).toBe(measurementValue);
-    expect(stats.average).toBe(measurementValue);
-    expect(stats.min).toBe(measurementValue);
-    expect(stats.max).toBe(measurementValue);
+    expectMeasurementStats(stats, 1, measurementValue, measurementValue, measurementValue, measurementValue);
   });
 
   // type tests
@@ -292,38 +333,6 @@ describe("MeasurementService findAll() tests", () => {
     const min = expectedMeasurements[0].value;
     const max = expectedMeasurements[expectedMeasurements.length - 1].value;
 
-    expect(stats.count).toBe(expectedMeasurements.length);
-    expect(stats.sum).toBeCloseTo(sum);
-    expect(stats.average).toBeCloseTo(average);
-    expect(stats.min).toBe(min);
-    expect(stats.max).toBe(max);
+    expectMeasurementStats(stats, expectedMeasurements.length, sum, average, min, max);
   });
 });
-/*
- * Helper functions
- */
-async function getMeasurementRow(db: Database, measurement: Measurement) {
-  return await new Promise<Measurement>((resolve, reject) => {
-    db.get(
-      `SELECT * FROM ${measurementTable.name} WHERE id = ?`,
-      [measurement.id],
-      (err: Error | null, rows: Measurement) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(rows);
-        }
-      }
-    );
-  });
-}
-
-function getISODateYearAgo() {
-  const dateYearAgo = new Date(new Date().setFullYear(new Date().getFullYear() - 1));
-  return dateYearAgo.toISOString();
-}
-
-function getISODateNextYear() {
-  const dateYearAgo = new Date(new Date().setFullYear(new Date().getFullYear() + 1));
-  return dateYearAgo.toISOString();
-}
