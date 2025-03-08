@@ -10,7 +10,7 @@ export class ValidationError extends Error {
 
 function isValidISOTimestamp(timestamp: string) {
   // Validate if is according to ISO 8601 standard.
-  return !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$/.test(timestamp);
+  return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$/.test(timestamp);
 }
 
 export const validateMeasurement = (data: any): Measurement => {
@@ -23,7 +23,7 @@ export const validateMeasurement = (data: any): Measurement => {
   }
 
   // Validate timestamp format (ISO 8601)
-  if (isValidISOTimestamp(data.timestamp)) {
+  if (!isValidISOTimestamp(data.timestamp)) {
     throw new ValidationError("Invalid timestamp format. Expected ISO 8601 format.");
   }
 
@@ -62,7 +62,7 @@ export const validateMeasurementFilter = (data: any, withPagination: boolean): M
 
   // Validate startDate timestamp format (ISO 8601), if startDate is given.
   if (data.startDate) {
-    if (isValidISOTimestamp(data.startDate)) {
+    if (!isValidISOTimestamp(data.startDate)) {
       throw new ValidationError("Invalid timestamp format for startDate. Expected ISO 8601 format.");
     }
     filter.startDate = data.startDate;
@@ -70,7 +70,7 @@ export const validateMeasurementFilter = (data: any, withPagination: boolean): M
 
   // Validate endDate timestamp format (ISO 8601), if endDate is given.
   if (data.endDate) {
-    if (isValidISOTimestamp(data.endDate)) {
+    if (!isValidISOTimestamp(data.endDate)) {
       throw new ValidationError("Invalid timestamp format for endDate. Expected ISO 8601 format.");
     }
     filter.endDate = data.endDate;
