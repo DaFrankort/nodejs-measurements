@@ -40,6 +40,16 @@ function resetMockRequestAndResponse() {
   return { mockRequest, mockResponse };
 }
 
+function expectStatus400(res: Response) {
+  expect(res.status).toHaveBeenCalledWith(400);
+  expect(res.json).toHaveBeenCalledWith(
+    expect.objectContaining({
+      success: false,
+      message: expect.any(String),
+    })
+  );
+}
+
 describe("MeasurementController create() tests", () => {
   /*** CONFIG ***/
   let db: Database;
@@ -87,13 +97,7 @@ describe("MeasurementController create() tests", () => {
 
     await measurementController.create(mockRequest, mockResponse);
 
-    expect(mockResponse.status).toHaveBeenCalledWith(400);
-    expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: false,
-        message: expect.any(String),
-      })
-    );
+    expectStatus400(mockResponse);
   });
 
   it("should not allow a measurement without value to be stored.", async () => {
@@ -102,13 +106,7 @@ describe("MeasurementController create() tests", () => {
 
     await measurementController.create(mockRequest, mockResponse);
 
-    expect(mockResponse.status).toHaveBeenCalledWith(400);
-    expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: false,
-        message: expect.any(String),
-      })
-    );
+    expectStatus400(mockResponse);
   });
 
   it("should not allow a measurement without meterID to be stored.", async () => {
@@ -117,13 +115,7 @@ describe("MeasurementController create() tests", () => {
 
     await measurementController.create(mockRequest, mockResponse);
 
-    expect(mockResponse.status).toHaveBeenCalledWith(400);
-    expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: false,
-        message: expect.any(String),
-      })
-    );
+    expectStatus400(mockResponse);
   });
 
   it("should not allow a measurement without type to be stored.", async () => {
@@ -132,13 +124,7 @@ describe("MeasurementController create() tests", () => {
 
     await measurementController.create(mockRequest, mockResponse);
 
-    expect(mockResponse.status).toHaveBeenCalledWith(400);
-    expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: false,
-        message: expect.any(String),
-      })
-    );
+    expectStatus400(mockResponse);
   });
 
   it("should succesfully handle multiple valid measurements and return status 201.", async () => {
@@ -260,12 +246,7 @@ describe("MeasurementController findAll() tests", () => {
     await measurementController.findAll(mockRequest, mockResponse);
 
     expect(mockMeasurementService.findAll).not.toHaveBeenCalled();
-    expect(mockResponse.status).toHaveBeenCalledWith(400);
-    expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: false,
-      })
-    );
+    expectStatus400(mockResponse);
   });
 
   // endDate tests
@@ -290,12 +271,7 @@ describe("MeasurementController findAll() tests", () => {
     await measurementController.findAll(mockRequest, mockResponse);
 
     expect(mockMeasurementService.findAll).not.toHaveBeenCalled();
-    expect(mockResponse.status).toHaveBeenCalledWith(400);
-    expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: false,
-      })
-    );
+    expectStatus400(mockResponse);
   });
 
   // meterID tests
@@ -320,12 +296,7 @@ describe("MeasurementController findAll() tests", () => {
     await measurementController.findAll(mockRequest, mockResponse);
 
     expect(mockMeasurementService.findAll).not.toHaveBeenCalled();
-    expect(mockResponse.status).toHaveBeenCalledWith(400);
-    expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: false,
-      })
-    );
+    expectStatus400(mockResponse);
   });
 
   // type tests
@@ -350,12 +321,7 @@ describe("MeasurementController findAll() tests", () => {
     await measurementController.findAll(mockRequest, mockResponse);
 
     expect(mockMeasurementService.findAll).not.toHaveBeenCalled();
-    expect(mockResponse.status).toHaveBeenCalledWith(400);
-    expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: false,
-      })
-    );
+    expectStatus400(mockResponse);
   });
 
   // page tests
@@ -380,12 +346,7 @@ describe("MeasurementController findAll() tests", () => {
     await measurementController.findAll(mockRequest, mockResponse);
 
     expect(mockMeasurementService.findAll).not.toHaveBeenCalled();
-    expect(mockResponse.status).toHaveBeenCalledWith(400);
-    expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: false,
-      })
-    );
+    expectStatus400(mockResponse);
   });
 
   // limit tests
@@ -410,12 +371,7 @@ describe("MeasurementController findAll() tests", () => {
     await measurementController.findAll(mockRequest, mockResponse);
 
     expect(mockMeasurementService.findAll).not.toHaveBeenCalled();
-    expect(mockResponse.status).toHaveBeenCalledWith(400);
-    expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: false,
-      })
-    );
+    expectStatus400(mockResponse);
   });
 });
 
@@ -491,12 +447,7 @@ describe("MeasurementController getStats() tests", () => {
     await measurementController.getStats(mockRequest, mockResponse);
 
     expect(mockMeasurementService.getStats).not.toHaveBeenCalled();
-    expect(mockResponse.status).toHaveBeenCalledWith(400);
-    expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: false,
-      })
-    );
+    expectStatus400(mockResponse);
   });
 
   // // endDate tests
@@ -522,12 +473,7 @@ describe("MeasurementController getStats() tests", () => {
     await measurementController.getStats(mockRequest, mockResponse);
 
     expect(mockMeasurementService.getStats).not.toHaveBeenCalled();
-    expect(mockResponse.status).toHaveBeenCalledWith(400);
-    expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: false,
-      })
-    );
+    expectStatus400(mockResponse);
   });
 
   // // meterID tests
@@ -553,12 +499,7 @@ describe("MeasurementController getStats() tests", () => {
     await measurementController.getStats(mockRequest, mockResponse);
 
     expect(mockMeasurementService.getStats).not.toHaveBeenCalled();
-    expect(mockResponse.status).toHaveBeenCalledWith(400);
-    expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: false,
-      })
-    );
+    expectStatus400(mockResponse);
   });
 
   // // type tests
@@ -584,11 +525,6 @@ describe("MeasurementController getStats() tests", () => {
     await measurementController.getStats(mockRequest, mockResponse);
 
     expect(mockMeasurementService.getStats).not.toHaveBeenCalled();
-    expect(mockResponse.status).toHaveBeenCalledWith(400);
-    expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: false,
-      })
-    );
+    expectStatus400(mockResponse);
   });
 });
