@@ -27,6 +27,19 @@ async function setupTestDatabaseAndController() {
   return { db, mockMeasurementService, measurementController };
 }
 
+function resetMockRequestAndResponse() {
+  const mockRequest = {
+    body: {},
+  };
+
+  const mockResponse = {
+    status: jest.fn().mockReturnThis(),
+    json: jest.fn().mockReturnThis(),
+  };
+
+  return { mockRequest, mockResponse };
+}
+
 describe("MeasurementController create() tests", () => {
   /*** CONFIG ***/
   let db: Database;
@@ -40,14 +53,7 @@ describe("MeasurementController create() tests", () => {
   });
 
   beforeEach(() => {
-    mockRequest = {
-      body: {},
-    };
-
-    mockResponse = {
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn().mockReturnThis(),
-    };
+    ({ mockRequest, mockResponse } = resetMockRequestAndResponse());
 
     mockMeasurementService.create.mockClear();
     mockMeasurementService.createMany.mockClear();
@@ -205,14 +211,7 @@ describe("MeasurementController findAll() tests", () => {
   });
 
   beforeEach(() => {
-    mockRequest = {
-      body: {},
-    };
-
-    mockResponse = {
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn().mockReturnThis(),
-    };
+    ({ mockRequest, mockResponse } = resetMockRequestAndResponse());
 
     mockMeasurementService.findAll.mockClear();
     mockMeasurementService.findAll.mockResolvedValue(MeasurementSeeder.generateMany(3));
@@ -434,14 +433,7 @@ describe("MeasurementController getStats() tests", () => {
   });
 
   beforeEach(() => {
-    mockRequest = {
-      body: {},
-    };
-
-    mockResponse = {
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn().mockReturnThis(),
-    };
+    ({ mockRequest, mockResponse } = resetMockRequestAndResponse());
 
     mockStats = {
       count: 0,
