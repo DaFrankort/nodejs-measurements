@@ -2,9 +2,18 @@ import { Measurement, MeasurementFilter } from "../types/measurement";
 import { v4 as uuidv4, validate as validateUuid } from "uuid";
 import { ValidationError } from "./errors";
 
-function isValidISOTimestamp(timestamp: string) {
-  // Validate if is according to ISO 8601 standard.
-  return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$/.test(timestamp);
+function isInvalidISOTimestamp(timestamp: string) {
+  // Validate if is not according to ISO 8601 standard.
+  return !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$/.test(timestamp);
+}
+function isNotPositiveNumber(value: any) {
+  return typeof value !== "number" || value < 0;
+}
+function isInvalidMeterID(meterID: any) {
+  return typeof meterID !== "string" || meterID.trim() === "";
+}
+function isInvalidMeasurementType(type: any) {
+  return !["production", "consumption"].includes(type);
 }
 
 export const validateMeasurement = (data: any): Measurement => {
@@ -16,22 +25,22 @@ export const validateMeasurement = (data: any): Measurement => {
   }
 
   // Validate timestamp format (ISO 8601)
-  if (!isValidISOTimestamp(data.timestamp)) {
+  if (isInvalidISOTimestamp(data.timestamp)) {
     throw ValidationError.global.invalidISOTimestamp("timestamp");
   }
 
   // Validate value is numeric and positive
-  if (typeof data.value !== "number" || data.value < 0) {
+  if (isNotPositiveNumber(data.value)) {
     throw ValidationError.global.mustBePositiveNumber("value");
   }
 
   // Validate meter ID format
-  if (typeof data.meterID !== "string" || data.meterID.trim() === "") {
+  if (isInvalidMeterID(data.meterID)) {
     throw ValidationError.measurement.invalidMeterID;
   }
 
   // Validate measurement type
-  if (!["production", "consumption"].includes(data.type)) {
+  if (isInvalidMeasurementType(data.type)) {
     throw ValidationError.measurement.invalidType;
   }
 
@@ -55,7 +64,7 @@ export const validateMeasurementFilter = (data: any, withPagination: boolean): M
 
   // Validate startDate timestamp format (ISO 8601), if startDate is given.
   if (data.startDate) {
-    if (!isValidISOTimestamp(data.startDate)) {
+    if (isInvalidISOTimestamp(data.startDate)) {
       throw ValidationError.global.invalidISOTimestamp("startDate");
     }
     filter.startDate = data.startDate;
@@ -63,7 +72,7 @@ export const validateMeasurementFilter = (data: any, withPagination: boolean): M
 
   // Validate endDate timestamp format (ISO 8601), if endDate is given.
   if (data.endDate) {
-    if (!isValidISOTimestamp(data.endDate)) {
+    if (isInvalidISOTimestamp(data.endDate)) {
       throw ValidationError.global.invalidISOTimestamp("endDate");
     }
     filter.endDate = data.endDate;
@@ -71,7 +80,7 @@ export const validateMeasurementFilter = (data: any, withPagination: boolean): M
 
   // Validate meter ID format, if meterID is given.
   if (data.meterID) {
-    if (typeof data.meterID !== "string" || data.meterID.trim() === "") {
+    if (isInvalidMeterID(data.meterID)) {
       throw ValidationError.measurement.invalidMeterID;
     }
     filter.meterID = data.meterID;
@@ -79,7 +88,7 @@ export const validateMeasurementFilter = (data: any, withPagination: boolean): M
 
   // Validate measurement type, if data.type is given.
   if (data.type) {
-    if (!["production", "consumption"].includes(data.type)) {
+    if (isInvalidMeasurementType(data.type)) {
       throw ValidationError.measurement.invalidType;
     }
     filter.type = data.type;
@@ -92,7 +101,7 @@ export const validateMeasurementFilter = (data: any, withPagination: boolean): M
 
   // Validate page is numeric and positive, if page is given.
   if (data.page) {
-    if (typeof data.page !== "number" || data.value < 0) {
+    if (isNotPositiveNumber(data.page)) {
       throw ValidationError.global.mustBePositiveNumber("page");
     }
     filter.page = data.page;
