@@ -1,7 +1,7 @@
 ## Running the application
 
 1. Clone the repo
-   `git@github.com:DaFrankort/nodejs-measurements.git`
+   `git clone git@github.com:DaFrankort/nodejs-measurements.git`
    `cd nodejs-measurements`
 
 2. Install all NPM packages
@@ -19,18 +19,22 @@ When designing this API, I primarly focused on practical use cases and keeping c
 
 ### SQLite for Database
 
-SQLite was chosen because:
+SQLite was chosen as a database because:
 
 - It is lightweight and easy to set up.
-- It does not require an external database server.
+- No external database server is required.
 - It is well-suited for small applications.
 - The `sqlite3` library is used for better asynchronous operations, allowing efficient handling of multiple read and write operations.
 
 For a larger, scalable API, a more robust database like **PostgreSQL** or **MySQL** would be considered.
 
+### Models
+
+Since the project uses only a single table, models were not implemented. If additional tables are added in the future, models would be used to define the relationships between tables and improve maintainability.
+
 ### Table Class
 
-To improve readability and maintainability, a `Table` class was created to handle table creation in the database. Instead of writing complex table creation logic in multiple places, the structure of each table is defined within models for clarity and consistency.
+To improve readability and maintainability, a `Table` class was created to handle table creation in the database. Instead of writing complex table creation logic in multiple places, the structure of each table is defined within service for clarity and consistency.
 
 ### MeasurementQueryBuilder
 
@@ -46,22 +50,7 @@ By structuring the API this way, the code remains clean, modular, and easy to ex
 
 The following components are tested:
 
-Table Class:
-
-- Ensures tables are created correctly within the database.
-- Verifies schema definitions are properly applied.
-
-Service Classes:
-
-- Tests if data is correctly handled and stored in the database.
-- Mocks database interactions to isolate service logic.
-
-Controller Classes:
-
-- Validates incoming requests and ensures proper handling.
-- Checks if correct responses are returned based on different inputs.
-
-API Endpoints:
-
-- Confirms that routes exist and function as expected.
-- Validates response status codes and response structures.
+- **Table Class:** Ensures tables are created correctly and verifies that schema definitions are properly applied.
+- **Service Classes:** Tests if data is correctly handled and stored in the database. Database interactions are mocked to isolate service logic.
+- **Controller Classes:** Validates incoming requests and ensures proper handling. Tests if correct responses are returned based on different inputs.
+- **API Endpoints:** Verifies that routes exist and function as expected. Confirms that response status codes and response structures are correct.
