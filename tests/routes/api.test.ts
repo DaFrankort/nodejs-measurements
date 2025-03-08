@@ -1,23 +1,23 @@
 import request from "supertest";
 import { app } from "../../src/app";
-import { MeasurementService } from "../../src/services/measurements";
 import { MeasurementSeeder } from "../utils/seeders";
-import { Measurement, MeasurementFilter, MeasurementStats } from "../../src/types/measurement";
+import { Measurement, MeasurementFilter } from "../../src/types/measurement";
 
-jest.mock("../../src/services/measurements");
+jest.mock("../../src/services/measurements", () => {
+  return {
+    MeasurementService: jest.fn().mockImplementation(() => {
+      return {
+        create: jest.fn(),
+        createMany: jest.fn(),
+        findAll: jest.fn(),
+        getStats: jest.fn(),
+        // add future functions to mock here
+      };
+    }),
+  };
+});
 
 describe("Measurement API Endpoints", () => {
-  let mockService: jest.Mocked<MeasurementService>;
-
-  beforeEach(() => {
-    mockService = {
-      create: jest.fn().mockImplementation(),
-      createMany: jest.fn().mockImplementation(),
-      findAll: jest.fn(),
-      getStats: jest.fn(),
-    } as unknown as jest.Mocked<MeasurementService>;
-  });
-
   afterAll(() => {
     jest.clearAllMocks();
   });
@@ -40,9 +40,6 @@ describe("Measurement API Endpoints", () => {
   });
 
   test("GET /api/measurements should return all measurements", async () => {
-    const measurements: Array<Measurement> = MeasurementSeeder.generateMany(3);
-    mockService.findAll.mockResolvedValue(Promise.resolve(measurements));
-
     const filter: MeasurementFilter = {};
     const response = await request(app).get("/api/measurements").query(filter);
 
@@ -51,9 +48,6 @@ describe("Measurement API Endpoints", () => {
   });
 
   test("GET /api/measurements/stats should return aggregated stats", async () => {
-    const stats: MeasurementStats = { count: 0, sum: 10, average: 20, min: 30, max: 40 };
-    mockService.getStats.mockResolvedValue(Promise.resolve(stats));
-
     const filter: MeasurementFilter = {};
     const response = await request(app).get("/api/measurements/stats").query(filter);
 
