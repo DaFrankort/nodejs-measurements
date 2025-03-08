@@ -12,6 +12,14 @@ async function setupTestDatabase() {
   return { db, measurementService };
 }
 
+function expectMeasurementRow(row: Measurement, measurement: Measurement) {
+  expect(row.id).toBe(measurement.id);
+  expect(row.meterID).toBe(measurement.meterID);
+  expect(row.timestamp).toBe(measurement.timestamp);
+  expect(row.type).toBe(measurement.type);
+  expect(row.value).toBe(measurement.value);
+}
+
 describe("MeasurementService create() tests", () => {
   /*** CONFIG ***/
   let db: Database;
@@ -32,11 +40,7 @@ describe("MeasurementService create() tests", () => {
     await measurementService.create(measurement);
 
     const row: Measurement = await getMeasurementRow(db, measurement);
-    expect(row.id).toBe(measurement.id);
-    expect(row.meterID).toBe(measurement.meterID);
-    expect(row.timestamp).toBe(measurement.timestamp);
-    expect(row.type).toBe(measurement.type);
-    expect(row.value).toBe(measurement.value);
+    expectMeasurementRow(row, measurement);
   });
 });
 
@@ -63,12 +67,7 @@ describe("MeasurementService createMany() tests", () => {
 
     for (const measurement of measurements) {
       const row: Measurement = await getMeasurementRow(db, measurement);
-
-      expect(row.id).toBe(measurement.id);
-      expect(row.meterID).toBe(measurement.meterID);
-      expect(row.timestamp).toBe(measurement.timestamp);
-      expect(row.type).toBe(measurement.type);
-      expect(row.value).toBe(measurement.value);
+      expectMeasurementRow(row, measurement);
     }
   });
 });
