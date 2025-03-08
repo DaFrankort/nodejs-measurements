@@ -72,8 +72,13 @@ export class MeasurementQueryBuilder {
   }
 
   private applyPagination(filter: MeasurementFilter) {
-    const page = filter.page ? filter.page : 1; // Default to page 1
-    const limit = filter.limit ? filter.limit : 50; // Default to 50 results per page
+    let page = filter.page ? filter.page : 1; // Default to page 1
+    page = Math.max(page, 1); // Min page is 1
+
+    let limit = filter.limit ? filter.limit : 50; // Default to 50 results per page
+    limit = Math.min(limit, 100); // Max limit is 100
+    limit = Math.max(limit, 1); // Min limit is 1
+
     const offset = (page - 1) * limit;
     this.query += " LIMIT ? OFFSET ?";
     this.values.push(limit, offset);
