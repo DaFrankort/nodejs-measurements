@@ -7,7 +7,7 @@ import { MeasurementSeeder } from "../utils/seeders";
 /*
  * Helper functions
  */
-async function setupTestDatabase() {
+async function setupTestDatabaseAndService() {
   const db = new Database(":memory:");
   await measurementTable.create(db);
   const measurementService = new MeasurementService(db);
@@ -70,7 +70,7 @@ describe("MeasurementService create() tests", () => {
   let measurementService: MeasurementService;
 
   beforeAll(async () => {
-    ({ db, measurementService } = await setupTestDatabase());
+    ({ db, measurementService } = await setupTestDatabaseAndService());
   });
 
   afterAll(() => {
@@ -94,7 +94,7 @@ describe("MeasurementService createMany() tests", () => {
   let measurementService: MeasurementService;
 
   beforeAll(async () => {
-    ({ db, measurementService } = await setupTestDatabase());
+    ({ db, measurementService } = await setupTestDatabaseAndService());
   });
 
   afterAll(() => {
@@ -123,7 +123,7 @@ describe("MeasurementService findAll() tests", () => {
   let measurements: Array<Measurement>;
 
   beforeAll(async () => {
-    ({ db, measurementService } = await setupTestDatabase());
+    ({ db, measurementService } = await setupTestDatabaseAndService());
 
     // Fill Database with dummy data
     measurements = MeasurementSeeder.generateMany(20);
@@ -229,7 +229,7 @@ describe("MeasurementService findAll() tests", () => {
   let expectedAverage: number;
 
   beforeAll(async () => {
-    ({ db, measurementService } = await setupTestDatabase());
+    ({ db, measurementService } = await setupTestDatabaseAndService());
 
     // Prepare comparison data
     measurements = MeasurementSeeder.generateMany(5);
