@@ -4,17 +4,21 @@ import { MeasurementService } from "../../src/services/measurements";
 import { Measurement, MeasurementFilter, MeasurementStats } from "../../src/types/measurement";
 import { MeasurementSeeder } from "../utils/seeders";
 
+async function setupTestDatabase() {
+  const db = new Database(":memory:");
+  await measurementTable.create(db);
+  const measurementService = new MeasurementService(db);
+
+  return { db, measurementService };
+}
+
 describe("MeasurementService create() tests", () => {
   /*** CONFIG ***/
   let db: Database;
   let measurementService: MeasurementService;
 
   beforeAll(async () => {
-    // In-memory database for testing purposes.
-    db = new Database(":memory:");
-    await measurementTable.create(db);
-
-    measurementService = new MeasurementService(db);
+    ({ db, measurementService } = await setupTestDatabase());
   });
 
   afterAll(() => {
@@ -42,11 +46,7 @@ describe("MeasurementService createMany() tests", () => {
   let measurementService: MeasurementService;
 
   beforeAll(async () => {
-    // In-memory database for testing purposes.
-    db = new Database(":memory:");
-    await measurementTable.create(db);
-
-    measurementService = new MeasurementService(db);
+    ({ db, measurementService } = await setupTestDatabase());
   });
 
   afterAll(() => {
@@ -80,11 +80,7 @@ describe("MeasurementService findAll() tests", () => {
   let measurements: Array<Measurement>;
 
   beforeAll(async () => {
-    // In-memory database for testing purposes.
-    db = new Database(":memory:");
-    await measurementTable.create(db);
-
-    measurementService = new MeasurementService(db);
+    ({ db, measurementService } = await setupTestDatabase());
 
     // Fill Database with dummy data
     measurements = MeasurementSeeder.generateMany(20);
@@ -190,11 +186,7 @@ describe("MeasurementService findAll() tests", () => {
   let expectedAverage: number;
 
   beforeAll(async () => {
-    // In-memory database for testing purposes.
-    db = new Database(":memory:");
-    await measurementTable.create(db);
-
-    measurementService = new MeasurementService(db);
+    ({ db, measurementService } = await setupTestDatabase());
 
     // Prepare comparison data
     measurements = MeasurementSeeder.generateMany(5);
