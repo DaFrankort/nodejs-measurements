@@ -1,23 +1,23 @@
 import request from "supertest";
 import { app } from "../../src/app";
-import { MeasurementService } from "../../src/services/measurements";
 import { MeasurementSeeder } from "../utils/seeders";
-import { Measurement, MeasurementFilter, MeasurementStats } from "../../src/types/measurement";
+import { Measurement, MeasurementFilter } from "../../src/types/measurement";
 
-jest.mock("../../src/services/measurements");
+jest.mock("../../src/services/measurements", () => {
+  return {
+    MeasurementService: jest.fn().mockImplementation(() => {
+      return {
+        create: jest.fn(),
+        createMany: jest.fn(),
+        findAll: jest.fn(),
+        getStats: jest.fn(),
+        // add future functions to mock here
+      };
+    }),
+  };
+});
 
 describe("Measurement API Endpoints", () => {
-  let mockService: jest.Mocked<MeasurementService>;
-
-  beforeEach(() => {
-    mockService = {
-      create: jest.fn().mockImplementation(),
-      createMany: jest.fn().mockImplementation(),
-      findAll: jest.fn(),
-      getStats: jest.fn(),
-    } as unknown as jest.Mocked<MeasurementService>;
-  });
-
   afterAll(() => {
     jest.clearAllMocks();
   });
