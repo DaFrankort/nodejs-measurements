@@ -72,7 +72,7 @@ function expectStatus200(res: Response, responseValue: any = null) {
   );
 }
 
-describe("MeasurementController create() tests", () => {
+describe("MeasurementController create()", () => {
   /*** CONFIG ***/
   let db: Database;
   let measurementController: MeasurementController;
@@ -97,116 +97,98 @@ describe("MeasurementController create() tests", () => {
   });
 
   /*** TESTS ***/
-  it("should succesfully handle a single valid measurement and return status 201.", async () => {
-    mockRequest.body = MeasurementSeeder.generate();
+  describe("Single Measurement", () => {
+    it("should successfully handle a single valid measurement and return status 201", async () => {
+      mockRequest.body = MeasurementSeeder.generate();
 
-    await measurementController.create(mockRequest, mockResponse);
+      await measurementController.create(mockRequest, mockResponse);
 
-    expect(mockMeasurementService.create).toHaveBeenCalled();
-    expect(mockResponse.status).toHaveBeenCalledWith(201);
-    expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: true,
-        message: expect.any(String),
-        id: mockRequest.body.id,
-      })
-    );
+      expect(mockMeasurementService.create).toHaveBeenCalled();
+      expect(mockResponse.status).toHaveBeenCalledWith(201);
+      expect(mockResponse.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          message: expect.any(String),
+          id: mockRequest.body.id,
+        })
+      );
+    });
+
+    test.each([
+      ["without timestamp", "timestamp"],
+      ["without value", "value"],
+      ["without meterID", "meterID"],
+      ["without type", "type"],
+    ])("should not allow a measurement %s to be stored", async (_, field) => {
+      mockRequest.body = MeasurementSeeder.generate();
+      delete mockRequest.body[field];
+
+      await measurementController.create(mockRequest, mockResponse);
+
+      expectStatus400(mockResponse);
+    });
   });
 
-  it("should not allow a measurement without timestamp to be stored.", async () => {
-    mockRequest.body = MeasurementSeeder.generate();
-    mockRequest.body.timestamp = undefined;
+  describe("Multiple Measurements", () => {
+    it("should succesfully handle multiple valid measurements and return status 201.", async () => {
+      mockRequest.body = MeasurementSeeder.generateMany(10);
 
-    await measurementController.create(mockRequest, mockResponse);
+      await measurementController.create(mockRequest, mockResponse);
 
-    expectStatus400(mockResponse);
-  });
+      expect(mockMeasurementService.createMany).toHaveBeenCalled();
+      expect(mockResponse.status).toHaveBeenCalledWith(201);
+      expect(mockResponse.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          message: expect.any(String),
+          failedCount: 0,
+          errors: undefined,
+        })
+      );
+    });
 
-  it("should not allow a measurement without value to be stored.", async () => {
-    mockRequest.body = MeasurementSeeder.generate();
-    mockRequest.body.value = undefined;
+    it("should respond with status 201 if at least one measurement was valid", async () => {
+      mockRequest.body = MeasurementSeeder.generateMany(5);
+      mockRequest.body[0].timestamp = undefined;
+      mockRequest.body[1].value = undefined;
+      mockRequest.body[2].meterID = undefined;
+      mockRequest.body[3].type = undefined;
 
-    await measurementController.create(mockRequest, mockResponse);
+      await measurementController.create(mockRequest, mockResponse);
 
-    expectStatus400(mockResponse);
-  });
+      expect(mockResponse.status).toHaveBeenCalledWith(201);
+      expect(mockResponse.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          message: expect.any(String),
+          failedCount: expect.any(Number),
+          errors: expect.any(Array),
+        })
+      );
+    });
 
-  it("should not allow a measurement without meterID to be stored.", async () => {
-    mockRequest.body = MeasurementSeeder.generate();
-    mockRequest.body.meterID = undefined;
+    it("should respond with status 400 if all measurements fail validation", async () => {
+      mockRequest.body = MeasurementSeeder.generateMany(4);
+      mockRequest.body[0].timestamp = undefined;
+      mockRequest.body[1].value = undefined;
+      mockRequest.body[2].meterID = undefined;
+      mockRequest.body[3].type = undefined;
 
-    await measurementController.create(mockRequest, mockResponse);
+      await measurementController.create(mockRequest, mockResponse);
 
-    expectStatus400(mockResponse);
-  });
-
-  it("should not allow a measurement without type to be stored.", async () => {
-    mockRequest.body = MeasurementSeeder.generate();
-    mockRequest.body.type = undefined;
-
-    await measurementController.create(mockRequest, mockResponse);
-
-    expectStatus400(mockResponse);
-  });
-
-  it("should succesfully handle multiple valid measurements and return status 201.", async () => {
-    mockRequest.body = MeasurementSeeder.generateMany(10);
-
-    await measurementController.create(mockRequest, mockResponse);
-
-    expect(mockMeasurementService.createMany).toHaveBeenCalled();
-    expect(mockResponse.status).toHaveBeenCalledWith(201);
-    expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: true,
-        message: expect.any(String),
-        failedCount: 0,
-        errors: undefined,
-      })
-    );
-  });
-
-  it("should respond with status 201 if at least one measurement was valid", async () => {
-    mockRequest.body = MeasurementSeeder.generateMany(5);
-    mockRequest.body[0].timestamp = undefined;
-    mockRequest.body[1].value = undefined;
-    mockRequest.body[2].meterID = undefined;
-    mockRequest.body[3].type = undefined;
-
-    await measurementController.create(mockRequest, mockResponse);
-
-    expect(mockResponse.status).toHaveBeenCalledWith(201);
-    expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: true,
-        message: expect.any(String),
-        failedCount: expect.any(Number),
-        errors: expect.any(Array),
-      })
-    );
-  });
-
-  it("should respond with status 400 if all measurements fail validation", async () => {
-    mockRequest.body = MeasurementSeeder.generateMany(4);
-    mockRequest.body[0].timestamp = undefined;
-    mockRequest.body[1].value = undefined;
-    mockRequest.body[2].meterID = undefined;
-    mockRequest.body[3].type = undefined;
-
-    await measurementController.create(mockRequest, mockResponse);
-
-    expect(mockResponse.status).toHaveBeenCalledWith(400);
-    expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: false,
-        message: expect.any(String),
-        errors: expect.any(Array),
-      })
-    );
+      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expect(mockResponse.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          message: expect.any(String),
+          errors: expect.any(Array),
+        })
+      );
+    });
   });
 });
 
-describe("MeasurementController findAll() tests", () => {
+describe("MeasurementController findAll()", () => {
   /*** CONFIG ***/
   let db: Database;
   let measurementController: MeasurementController;
@@ -231,131 +213,45 @@ describe("MeasurementController findAll() tests", () => {
   });
 
   /*** TESTS ***/
-  it("should succesfully fetch data without filters and return status 200", async () => {
-    mockRequest.body = {};
+  describe("Successful requests", () => {
+    test.each([
+      ["without filters", {}],
+      ["with a valid startDate", { startDate: new Date().toISOString() }],
+      ["with a valid endDate", { endDate: new Date().toISOString() }],
+      ["with a valid meterID", { meterID: "ID123" }],
+      ["with a valid type", { type: "production" }],
+      ["with a valid page", { page: 1 }],
+      ["with a valid limit", { limit: 25 }],
+    ])("should successfully fetch data %s and return status 200", async (_, body) => {
+      mockRequest.body = body;
 
-    await measurementController.findAll(mockRequest, mockResponse);
+      await measurementController.findAll(mockRequest, mockResponse);
 
-    expect(mockMeasurementService.findAll).toHaveBeenCalled();
-    expectStatus200(mockResponse);
+      expect(mockMeasurementService.findAll).toHaveBeenCalled();
+      expectStatus200(mockResponse);
+    });
   });
 
-  // startDate tests
-  it("should succesfully fetch data with a valid startDate and return status 200", async () => {
-    mockRequest.body = { startDate: new Date().toISOString() };
+  describe("Failed requests", () => {
+    test.each([
+      ["invalid startDate", { startDate: new Date().toUTCString() }],
+      ["invalid endDate", { endDate: new Date().toUTCString() }],
+      ["invalid meterID", { meterID: 123 }],
+      ["invalid type", { type: "not a valid type" }],
+      ["invalid page", { page: "not a valid type" }],
+      ["invalid limit", { limit: "not a valid type" }],
+    ])("should fail to fetch data with %s and return status 400", async (_, body) => {
+      mockRequest.body = body;
 
-    await measurementController.findAll(mockRequest, mockResponse);
+      await measurementController.findAll(mockRequest, mockResponse);
 
-    expect(mockMeasurementService.findAll).toHaveBeenCalled();
-    expectStatus200(mockResponse);
-  });
-
-  it("should fail to fetch data with an invalid startDate and return status 400", async () => {
-    mockRequest.body = { startDate: new Date().toUTCString() };
-
-    await measurementController.findAll(mockRequest, mockResponse);
-
-    expect(mockMeasurementService.findAll).not.toHaveBeenCalled();
-    expectStatus400(mockResponse);
-  });
-
-  // endDate tests
-  it("should succesfully fetch data with a valid endDate and return status 200", async () => {
-    mockRequest.body = { endDate: new Date().toISOString() };
-
-    await measurementController.findAll(mockRequest, mockResponse);
-
-    expect(mockMeasurementService.findAll).toHaveBeenCalled();
-    expectStatus200(mockResponse);
-  });
-
-  it("should fail to fetch data with an invalid endDate and return status 400", async () => {
-    mockRequest.body = { endDate: new Date().toUTCString() };
-
-    await measurementController.findAll(mockRequest, mockResponse);
-
-    expect(mockMeasurementService.findAll).not.toHaveBeenCalled();
-    expectStatus400(mockResponse);
-  });
-
-  // meterID tests
-  it("should succesfully fetch data with a valid meterID and return status 200", async () => {
-    mockRequest.body = { meterID: "ID123" };
-
-    await measurementController.findAll(mockRequest, mockResponse);
-
-    expect(mockMeasurementService.findAll).toHaveBeenCalled();
-    expectStatus200(mockResponse);
-  });
-
-  it("should fail to fetch data with an invalid meterID and return status 400", async () => {
-    mockRequest.body = { meterID: 123 };
-
-    await measurementController.findAll(mockRequest, mockResponse);
-
-    expect(mockMeasurementService.findAll).not.toHaveBeenCalled();
-    expectStatus400(mockResponse);
-  });
-
-  // type tests
-  it("should succesfully fetch data with a valid type and return status 200", async () => {
-    mockRequest.body = { type: "production" };
-
-    await measurementController.findAll(mockRequest, mockResponse);
-
-    expect(mockMeasurementService.findAll).toHaveBeenCalled();
-    expectStatus200(mockResponse);
-  });
-
-  it("should fail to fetch data with an invalid type and return status 400", async () => {
-    mockRequest.body = { type: "not a valid type" };
-
-    await measurementController.findAll(mockRequest, mockResponse);
-
-    expect(mockMeasurementService.findAll).not.toHaveBeenCalled();
-    expectStatus400(mockResponse);
-  });
-
-  // page tests
-  it("should succesfully fetch data with a valid page and return status 200", async () => {
-    mockRequest.body = { page: 1 };
-
-    await measurementController.findAll(mockRequest, mockResponse);
-
-    expect(mockMeasurementService.findAll).toHaveBeenCalled();
-    expectStatus200(mockResponse);
-  });
-
-  it("should fail to fetch data with an invalid page and return status 400", async () => {
-    mockRequest.body = { page: "not a valid type" };
-
-    await measurementController.findAll(mockRequest, mockResponse);
-
-    expect(mockMeasurementService.findAll).not.toHaveBeenCalled();
-    expectStatus400(mockResponse);
-  });
-
-  // limit tests
-  it("should succesfully fetch data with a valid limit and return status 200", async () => {
-    mockRequest.body = { limit: 25 };
-
-    await measurementController.findAll(mockRequest, mockResponse);
-
-    expect(mockMeasurementService.findAll).toHaveBeenCalled();
-    expectStatus200(mockResponse);
-  });
-
-  it("should fail to fetch data with an invalid limit and return status 400", async () => {
-    mockRequest.body = { limit: "not a valid type" };
-
-    await measurementController.findAll(mockRequest, mockResponse);
-
-    expect(mockMeasurementService.findAll).not.toHaveBeenCalled();
-    expectStatus400(mockResponse);
+      expect(mockMeasurementService.findAll).not.toHaveBeenCalled();
+      expectStatus400(mockResponse);
+    });
   });
 });
 
-describe("MeasurementController getStats() tests", () => {
+describe("MeasurementController getStats()", () => {
   /*** CONFIG ***/
   let db: Database;
   let measurementController: MeasurementController;
@@ -388,88 +284,36 @@ describe("MeasurementController getStats() tests", () => {
   });
 
   /*** TESTS ***/
-  it("should succesfully fetch stats without filters and return status 200", async () => {
-    mockRequest.body = {};
+  describe("Successful requests", () => {
+    test.each([
+      ["without filters", {}],
+      ["with a valid startDate", { startDate: new Date().toISOString() }],
+      ["with a valid endDate", { endDate: new Date().toISOString() }],
+      ["with a valid meterID", { meterID: "ID123" }],
+      ["with a valid type", { type: "production" }],
+    ])("should successfully fetch stats %s and return status 200", async (_, body) => {
+      mockRequest.body = body;
 
-    await measurementController.getStats(mockRequest, mockResponse);
+      await measurementController.getStats(mockRequest, mockResponse);
 
-    expect(mockMeasurementService.getStats).toHaveBeenCalled();
-    expectStatus200(mockResponse, mockStats);
+      expect(mockMeasurementService.getStats).toHaveBeenCalled();
+      expectStatus200(mockResponse, mockStats);
+    });
   });
 
-  // // startDate tests
-  it("should succesfully fetch stats with a valid startDate and return status 200", async () => {
-    mockRequest.body = { startDate: new Date().toISOString() };
+  describe("Failed requests", () => {
+    test.each([
+      ["invalid startDate", { startDate: new Date().toUTCString() }],
+      ["invalid endDate", { endDate: new Date().toUTCString() }],
+      ["invalid meterID", { meterID: 123 }],
+      ["invalid type", { type: "not a valid type" }],
+    ])("should fail to fetch stats with %s and return status 400", async (_, body) => {
+      mockRequest.body = body;
 
-    await measurementController.getStats(mockRequest, mockResponse);
+      await measurementController.getStats(mockRequest, mockResponse);
 
-    expect(mockMeasurementService.getStats).toHaveBeenCalled();
-    expectStatus200(mockResponse, mockStats);
-  });
-
-  it("should fail to fetch stats with an invalid startDate and return status 400", async () => {
-    mockRequest.body = { startDate: new Date().toUTCString() };
-
-    await measurementController.getStats(mockRequest, mockResponse);
-
-    expect(mockMeasurementService.getStats).not.toHaveBeenCalled();
-    expectStatus400(mockResponse);
-  });
-
-  // // endDate tests
-  it("should succesfully fetch stats with a valid endDate and return status 200", async () => {
-    mockRequest.body = { endDate: new Date().toISOString() };
-
-    await measurementController.getStats(mockRequest, mockResponse);
-
-    expect(mockMeasurementService.getStats).toHaveBeenCalled();
-    expectStatus200(mockResponse, mockStats);
-  });
-
-  it("should fail to fetch stats with an invalid endDate and return status 400", async () => {
-    mockRequest.body = { endDate: new Date().toUTCString() };
-
-    await measurementController.getStats(mockRequest, mockResponse);
-
-    expect(mockMeasurementService.getStats).not.toHaveBeenCalled();
-    expectStatus400(mockResponse);
-  });
-
-  // // meterID tests
-  it("should succesfully fetch stats with a valid meterID and return status 200", async () => {
-    mockRequest.body = { meterID: "ID123" };
-
-    await measurementController.getStats(mockRequest, mockResponse);
-
-    expect(mockMeasurementService.getStats).toHaveBeenCalled();
-    expectStatus200(mockResponse, mockStats);
-  });
-
-  it("should fail to fetch stats with an invalid meterID and return status 400", async () => {
-    mockRequest.body = { meterID: 123 };
-
-    await measurementController.getStats(mockRequest, mockResponse);
-
-    expect(mockMeasurementService.getStats).not.toHaveBeenCalled();
-    expectStatus400(mockResponse);
-  });
-
-  // // type tests
-  it("should succesfully fetch stats with a valid type and return status 200", async () => {
-    mockRequest.body = { type: "production" };
-
-    await measurementController.getStats(mockRequest, mockResponse);
-
-    expect(mockMeasurementService.getStats).toHaveBeenCalled();
-    expectStatus200(mockResponse, mockStats);
-  });
-
-  it("should fail to fetch stats with an invalid type and return status 400", async () => {
-    mockRequest.body = { type: "not a valid type" };
-
-    await measurementController.getStats(mockRequest, mockResponse);
-
-    expect(mockMeasurementService.getStats).not.toHaveBeenCalled();
-    expectStatus400(mockResponse);
+      expect(mockMeasurementService.getStats).not.toHaveBeenCalled();
+      expectStatus400(mockResponse);
+    });
   });
 });
