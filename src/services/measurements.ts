@@ -1,6 +1,7 @@
 import { Database } from "sqlite3";
 import { Measurement, MeasurementFilter, MeasurementStats } from "../types/measurement";
 import { Table } from "../utils/database";
+import { DatabaseError } from "../utils/errors";
 
 export const MeasurementTable = new Table("measurements", [
   "id TEXT PRIMARY KEY", // Unique UUID
@@ -90,7 +91,7 @@ export class MeasurementService {
         if (err) {
           console.error("Error inserting data:", err.message);
           reject(err);
-          return;
+          throw DatabaseError.db.insertError;
         }
 
         resolve();
@@ -120,7 +121,7 @@ export class MeasurementService {
               if (err) {
                 console.error("Error inserting measurement:", err.message);
                 reject(err);
-                return;
+                throw DatabaseError.db.insertError;
               }
               resolve();
             });
@@ -159,7 +160,7 @@ export class MeasurementService {
         if (err) {
           console.error("Error selecting data:", err.message);
           reject(err);
-          return;
+          throw DatabaseError.db.selectError;
         }
         resolve(rows);
       });
@@ -180,7 +181,7 @@ export class MeasurementService {
         if (err) {
           console.error("Error selecting data:", err.message);
           reject(err);
-          return;
+          throw DatabaseError.db.selectError;
         }
 
         resolve({

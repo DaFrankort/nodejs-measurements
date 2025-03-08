@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { MeasurementService } from "../services/measurements";
 import { validateMeasurement, validateMeasurementFilter } from "../utils/validators";
 import { Measurement, MeasurementStats } from "../types/measurement";
-import { ValidationError } from "../utils/errors";
+import { DatabaseError, ValidationError } from "../utils/errors";
 
 export class MeasurementController {
   private measurementService: MeasurementService;
@@ -14,6 +14,11 @@ export class MeasurementController {
   private handleErrorResponse(error: Error | null, res: Response): void {
     if (error instanceof ValidationError) {
       res.status(400).json({ success: false, message: error.message });
+      return;
+    }
+
+    if (error instanceof DatabaseError) {
+      res.status(500).json({ success: false, message: error.message });
       return;
     }
 

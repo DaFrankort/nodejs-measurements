@@ -19,3 +19,15 @@ export class ValidationError extends Error {
     this.name = "ValidationError";
   }
 }
+
+export class DatabaseError extends Error {
+  static db = {
+    insertError: new DatabaseError("Could not insert to database."),
+    selectError: new DatabaseError("Could not retrieve from database."),
+  };
+
+  constructor(message: string) {
+    super(message);
+    this.name = "DatabaseError";
+  }
+}
