@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
+import setupSwagger from "./swagger";
 import { measurementRoutes } from "./routes/api";
 
 export const app = express();
@@ -14,6 +15,7 @@ app.use(express.json());
 
 // Routes
 app.use("/api", measurementRoutes);
+setupSwagger(app);
 
 // Error handling middleware
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

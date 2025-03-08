@@ -15,8 +15,11 @@ function isValidISOTimestamp(timestamp: string) {
 
 export const validateMeasurement = (data: any): Measurement => {
   // Check if all required fields are present
-  if (!data.timestamp || !data.value || !data.meterID || !data.type) {
-    throw new ValidationError("Missing required fields");
+  const requiredFields = ["timestamp", "value", "meterID", "type"];
+  const missingFields = requiredFields.filter((field) => data[field] === undefined || data[field] === null);
+  if (missingFields.length > 0) {
+    const errorMessage = `Missing required fields: ${missingFields.join(", ")}`;
+    throw new ValidationError(errorMessage);
   }
 
   // Validate timestamp format (ISO 8601)
