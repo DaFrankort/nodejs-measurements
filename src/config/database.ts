@@ -1,5 +1,5 @@
 import { Database } from "sqlite3";
-import { MeasurementTable } from "../models/measurement";
+import { MeasurementTable } from "../services/measurements";
 
 /*
  * Create Database Connection
