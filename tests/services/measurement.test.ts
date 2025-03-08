@@ -4,7 +4,7 @@ import { MeasurementService } from "../../src/services/measurements";
 import { Measurement, MeasurementFilter, MeasurementStats } from "../../src/types/measurement";
 import { MeasurementSeeder } from "../utils/seeders";
 
-describe("MeasurementService create() and createMany() tests", () => {
+describe("MeasurementService create() tests", () => {
   /*** CONFIG ***/
   let db: Database;
   let measurementService: MeasurementService;
@@ -34,7 +34,26 @@ describe("MeasurementService create() and createMany() tests", () => {
     expect(row.type).toBe(measurement.type);
     expect(row.value).toBe(measurement.value);
   });
+});
 
+describe("MeasurementService createMany() tests", () => {
+  /*** CONFIG ***/
+  let db: Database;
+  let measurementService: MeasurementService;
+
+  beforeAll(async () => {
+    // In-memory database for testing purposes.
+    db = new Database(":memory:");
+    await measurementTable.create(db);
+
+    measurementService = new MeasurementService(db);
+  });
+
+  afterAll(() => {
+    db.close();
+  });
+
+  /*** TESTS ***/
   it("should succesfully add multiple measurements to the database.", async () => {
     const measurements = MeasurementSeeder.generateMany(10);
 
