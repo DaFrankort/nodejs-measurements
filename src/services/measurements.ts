@@ -91,7 +91,8 @@ export class MeasurementService {
         if (err) {
           console.error("Error inserting data:", err.message);
           reject(err);
-          throw DatabaseError.db.insertError;
+
+          throw DatabaseError.unavailable;
         }
 
         resolve();
@@ -121,7 +122,7 @@ export class MeasurementService {
               if (err) {
                 console.error("Error inserting measurement:", err.message);
                 reject(err);
-                throw DatabaseError.db.insertError;
+                throw DatabaseError.unavailable;
               }
               resolve();
             });
@@ -160,7 +161,7 @@ export class MeasurementService {
         if (err) {
           console.error("Error selecting data:", err.message);
           reject(err);
-          throw DatabaseError.db.selectError;
+          throw DatabaseError.unavailable;
         }
         resolve(rows);
       });
@@ -181,7 +182,7 @@ export class MeasurementService {
         if (err) {
           console.error("Error selecting data:", err.message);
           reject(err);
-          throw DatabaseError.db.selectError;
+          throw DatabaseError.unavailable;
         }
 
         resolve({

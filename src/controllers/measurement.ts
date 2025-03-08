@@ -18,7 +18,7 @@ export class MeasurementController {
     }
 
     if (error instanceof DatabaseError) {
-      res.status(500).json({ success: false, message: error.message });
+      res.status(503).json({ success: false, message: error.message });
       return;
     }
 

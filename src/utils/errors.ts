@@ -21,10 +21,7 @@ export class ValidationError extends Error {
 }
 
 export class DatabaseError extends Error {
-  static db = {
-    insertError: new DatabaseError("Could not insert to database."),
-    selectError: new DatabaseError("Could not retrieve from database."),
-  };
+  static unavailable = new DatabaseError("Server is busy, please try again later.");
 
   constructor(message: string) {
     super(message);
