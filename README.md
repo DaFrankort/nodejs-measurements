@@ -32,7 +32,7 @@ For a larger, scalable API, a more robust database like **PostgreSQL** or **MySQ
 
 To improve readability and maintainability, a `Table` class was created to handle table creation in the database. Instead of writing complex table creation logic in multiple places, the structure of each table is defined within models for clarity and consistency.
 
-#### MeasurementQueryBuilder
+### MeasurementQueryBuilder
 
 Since query-building is a repetitive task within the service layer, a `MeasurementQueryBuilder` class was introduced. This helps to:
 
