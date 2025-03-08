@@ -18,13 +18,17 @@ export class MeasurementService {
     const queryBuilder: MeasurementQueryBuilder = new MeasurementQueryBuilder();
     queryBuilder.buildMeasurementInsert(measurement);
 
-    this.db.run(queryBuilder.query, queryBuilder.values), // TODO Return as promise, like the others
-      (err: Error | null) => {
+    return new Promise((resolve, reject) => {
+      this.db.run(queryBuilder.query, queryBuilder.values, (err: Error | null) => {
         if (err) {
           console.error("Error inserting data:", err.message);
+          reject(err);
           return;
         }
-      };
+
+        resolve();
+      });
+    });
   }
 
   /**
