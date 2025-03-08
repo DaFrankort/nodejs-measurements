@@ -1,6 +1,5 @@
 import { Database } from "sqlite3";
-import { MeasurementTable } from "../../src/models/measurement";
-import { MeasurementService } from "../../src/services/measurements";
+import { MeasurementService, MeasurementTable } from "../../src/services/measurements";
 import { Measurement, MeasurementFilter, MeasurementStats } from "../../src/types/measurement";
 import { MeasurementSeeder } from "../utils/seeders";
 
