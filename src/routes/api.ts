@@ -66,6 +66,12 @@ const measurementController = new MeasurementController(measurementService);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ServerErrorResponse'
+ *       503:
+ *         description: Server unable to handle incoming requests.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/DatabaseErrorResponse'
  */
 router.post("/measurements", (req, res) => measurementController.create(req, res));
 
@@ -147,6 +153,12 @@ router.post("/measurements", (req, res) => measurementController.create(req, res
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ServerErrorResponse'
+ *       503:
+ *         description: Server unable to handle incoming requests.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/DatabaseErrorResponse'
  */
 router.get("/measurements", (req, res) => measurementController.findAll(req, res));
 
@@ -203,6 +215,12 @@ router.get("/measurements", (req, res) => measurementController.findAll(req, res
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ServerErrorResponse'
+ *       503:
+ *         description: Server unable to handle incoming requests.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/DatabaseErrorResponse'
  */
 router.get("/measurements/stats", (req, res) => measurementController.getStats(req, res));
 
