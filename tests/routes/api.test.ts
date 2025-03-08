@@ -22,36 +22,42 @@ describe("Measurement API Endpoints", () => {
     jest.clearAllMocks();
   });
 
-  test("POST /api/measurements should create a measurement when single measurement is provided", async () => {
-    const measurement: Measurement = MeasurementSeeder.generate();
-    const response = await request(app).post("/api/measurements").send(measurement);
+  describe("POST /api/measurements", () => {
+    it("should create a measurement when single measurement is provided", async () => {
+      const measurement: Measurement = MeasurementSeeder.generate();
+      const response = await request(app).post("/api/measurements").send(measurement);
 
-    expect(response.status).toBe(201);
-    expect(response.body.success).toBe(true);
-    expect(response.body.id).toBe(measurement.id);
+      expect(response.status).toBe(201);
+      expect(response.body.success).toBe(true);
+      expect(response.body.id).toBe(measurement.id);
+    });
+
+    it("should create a measurement when many measurements are provided", async () => {
+      const measurements: Array<Measurement> = MeasurementSeeder.generateMany(3);
+      const response = await request(app).post("/api/measurements").send(measurements);
+
+      expect(response.status).toBe(201);
+      expect(response.body.success).toBe(true);
+    });
   });
 
-  test("POST /api/measurements should create a measurement when many measurements are provided", async () => {
-    const measurements: Array<Measurement> = MeasurementSeeder.generateMany(3);
-    const response = await request(app).post("/api/measurements").send(measurements);
+  describe("GET /api/measurements", () => {
+    it("should return all measurements", async () => {
+      const filter: MeasurementFilter = {};
+      const response = await request(app).get("/api/measurements").query(filter);
 
-    expect(response.status).toBe(201);
-    expect(response.body.success).toBe(true);
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+    });
   });
 
-  test("GET /api/measurements should return all measurements", async () => {
-    const filter: MeasurementFilter = {};
-    const response = await request(app).get("/api/measurements").query(filter);
+  describe("GET /api/measurements/stats", () => {
+    it("should return aggregated stats", async () => {
+      const filter: MeasurementFilter = {};
+      const response = await request(app).get("/api/measurements/stats").query(filter);
 
-    expect(response.status).toBe(200);
-    expect(response.body.success).toBe(true);
-  });
-
-  test("GET /api/measurements/stats should return aggregated stats", async () => {
-    const filter: MeasurementFilter = {};
-    const response = await request(app).get("/api/measurements/stats").query(filter);
-
-    expect(response.status).toBe(200);
-    expect(response.body.success).toBe(true);
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+    });
   });
 });
