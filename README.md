@@ -1,17 +1,67 @@
-### Running the application
+## Running the application
 
-_-> TODO FILL THIS IN_
+1. Clone the repo
+   `git@github.com:DaFrankort/nodejs-measurements.git`
+   `cd nodejs-measurements`
 
-### Initial design considerations
+2. Install all NPM packages
+   `npm install`
+
+3. Build the application
+   `npm run build`
+
+4. Run the application
+   `npm run start`
+
+## Design considerations
 
 When designing this API, I primarly focused on practical use cases and keeping clean & maintainable code. Since this API is not intended for production use I made the following design choices:
 
-#### Multithreading Considerations
+### SQLite for Database
 
-Some endpoints, like `POST /api/measurements`, may need to process large amounts of data, making multithreading a potential optimization. However, introducing multithreading can add complexity and reduce code simplicity. To keep the initial implementation straightforward, I have opted not to use multithreading at this stage. If performance later suggests significant benefits, I would consider adding it.
+SQLite was chosen because:
 
-#### SQLite for Database
+- It is lightweight and easy to set up.
+- It does not require an external database server.
+- It is well-suited for small applications.
+- The `sqlite3` library is used for better asynchronous operations, allowing efficient handling of multiple read and write operations.
 
-Since this API is relatively small and will not need to be scaled up down the line, I will use SQLite. Since it's easy to set up, most familiar to me, lightweight and doesn't require any external database hosting. If this API were to be bigger I would consider using PostgreSQL or MySQL since they're better suited for larger APIs.
+For a larger, scalable API, a more robust database like **PostgreSQL** or **MySQL** would be considered.
 
-To use SQLite I have opted to use the `sqlite3` library, since this library is better for asynchronous operations. This allows me to easily implement multithreading if need-be.
+### Table Class
+
+To improve readability and maintainability, a `Table` class was created to handle table creation in the database. Instead of writing complex table creation logic in multiple places, the structure of each table is defined within models for clarity and consistency.
+
+#### MeasurementQueryBuilder
+
+Since query-building is a repetitive task within the service layer, a `MeasurementQueryBuilder` class was introduced. This helps to:
+
+- Standardize query creation.
+- Reduce redundant code.
+- Improve maintainability by encapsulating query logic in a single place.
+
+By structuring the API this way, the code remains clean, modular, and easy to extend if needed.
+
+#### Unit Tests
+
+The following components are tested:
+
+Table Class:
+
+- Ensures tables are created correctly within the database.
+- Verifies schema definitions are properly applied.
+
+Service Classes:
+
+- Tests if data is correctly handled and stored in the database.
+- Mocks database interactions to isolate service logic.
+
+Controller Classes:
+
+- Validates incoming requests and ensures proper handling.
+- Checks if correct responses are returned based on different inputs.
+
+API Endpoints:
+
+- Confirms that routes exist and function as expected.
+- Validates response status codes and response structures.
