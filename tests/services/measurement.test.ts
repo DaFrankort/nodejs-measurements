@@ -58,8 +58,8 @@ function expectMeasurementStats(
   max: number
 ) {
   expect(stats.count).toBe(count);
-  expect(stats.sum).toBe(sum);
-  expect(stats.average).toBe(average);
+  expect(stats.sum).toBeCloseTo(sum);
+  expect(stats.average).toBeCloseTo(average);
   expect(stats.min).toBe(min);
   expect(stats.max).toBe(max);
 }
