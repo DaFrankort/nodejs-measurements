@@ -1,7 +1,7 @@
 import { Measurement, MeasurementFilter } from "../types/measurement";
 import { Table } from "../utils/database";
 
-export const measurementTable = new Table("measurements", [
+export const MeasurementTable = new Table("measurements", [
   "id TEXT PRIMARY KEY", // Unique UUID
   "timestamp TEXT NOT NULL", // Timestamp of measurement (ISO 8601 FORMAT)
   "value REAL NOT NULL", // energy value (kWh)
@@ -35,18 +35,18 @@ export class MeasurementQueryBuilder {
   }
 
   buildMeasurementInsert(measurement: Measurement) {
-    this.query = `INSERT INTO ${measurementTable.name} (id, timestamp, value, meterID, type) VALUES (?, ?, ?, ?, ?);`;
+    this.query = `INSERT INTO ${MeasurementTable.name} (id, timestamp, value, meterID, type) VALUES (?, ?, ?, ?, ?);`;
     this.values = [measurement.id, measurement.timestamp, measurement.value, measurement.meterID, measurement.type];
   }
 
   buildMeasurementSelect(filter: MeasurementFilter) {
-    this.query = `SELECT * FROM ${measurementTable.name}`;
+    this.query = `SELECT * FROM ${MeasurementTable.name}`;
     this.applyFilters(filter);
     this.applyPagination(filter);
   }
 
   buildStatsSelect(filter: MeasurementFilter) {
-    this.query = `SELECT COUNT(*) AS count, SUM(value) AS sum, AVG(value) AS average, MIN(value) AS min, MAX(value) AS max FROM ${measurementTable.name}`;
+    this.query = `SELECT COUNT(*) AS count, SUM(value) AS sum, AVG(value) AS average, MIN(value) AS min, MAX(value) AS max FROM ${MeasurementTable.name}`;
     this.applyFilters(filter);
   }
 

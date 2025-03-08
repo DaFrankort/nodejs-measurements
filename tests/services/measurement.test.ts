@@ -1,5 +1,5 @@
 import { Database } from "sqlite3";
-import { measurementTable } from "../../src/models/measurement";
+import { MeasurementTable } from "../../src/models/measurement";
 import { MeasurementService } from "../../src/services/measurements";
 import { Measurement, MeasurementFilter, MeasurementStats } from "../../src/types/measurement";
 import { MeasurementSeeder } from "../utils/seeders";
@@ -9,7 +9,7 @@ import { MeasurementSeeder } from "../utils/seeders";
  */
 async function setupTestDatabaseAndService() {
   const db = new Database(":memory:");
-  await measurementTable.create(db);
+  await MeasurementTable.create(db);
   const measurementService = new MeasurementService(db);
 
   return { db, measurementService };
@@ -18,7 +18,7 @@ async function setupTestDatabaseAndService() {
 async function getMeasurementRow(db: Database, measurement: Measurement) {
   return await new Promise<Measurement>((resolve, reject) => {
     db.get(
-      `SELECT * FROM ${measurementTable.name} WHERE id = ?`,
+      `SELECT * FROM ${MeasurementTable.name} WHERE id = ?`,
       [measurement.id],
       (err: Error | null, rows: Measurement) => {
         if (err) {

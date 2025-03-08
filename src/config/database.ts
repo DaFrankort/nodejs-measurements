@@ -1,5 +1,5 @@
 import { Database } from "sqlite3";
-import { measurementTable } from "../models/measurement";
+import { MeasurementTable } from "../models/measurement";
 
 /*
  * Create Database Connection
@@ -12,7 +12,7 @@ export default db;
  */
 export function initDatabaseTables() {
   const tablePromises = [
-    measurementTable.create(db),
+    MeasurementTable.create(db),
     // Add future table create actions here
   ];
 
