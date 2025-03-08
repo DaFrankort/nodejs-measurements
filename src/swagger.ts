@@ -24,7 +24,7 @@ const swaggerDefinition = {
           id: {
             type: "string",
             format: "uuid",
-            description: "A unique identifier for the measurement",
+            description: "A unique identifier for the measurement, generated when not provided.",
           },
           timestamp: {
             type: "string",
@@ -38,8 +38,8 @@ const swaggerDefinition = {
           },
           meterID: {
             type: "string",
-            pattern: "^[^\\s]+$", // meterID must not contain spaces
-            description: "The ID of the meter (no spaces allowed)",
+            pattern: "^[^\\s]+$", // meterID must not contain whitespaces
+            description: "The ID of the meter (no whitespaces allowed)",
           },
           type: {
             type: "string",
@@ -174,30 +174,27 @@ const swaggerDefinition = {
             description: "A message about the outcome of the request",
           },
           response: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                count: {
-                  type: "integer",
-                  description: "Total number of measurements that match the filters",
-                },
-                sum: {
-                  type: "number",
-                  description: "The total sum of all matching measurements",
-                },
-                average: {
-                  type: "number",
-                  description: "The average value of the measurements",
-                },
-                min: {
-                  type: "number",
-                  description: "The minimum value of the measurements",
-                },
-                max: {
-                  type: "number",
-                  description: "The maximum value of the measurements",
-                },
+            type: "object",
+            properties: {
+              count: {
+                type: "integer",
+                description: "Total number of measurements that match the filters",
+              },
+              sum: {
+                type: "number",
+                description: "The total sum of all matching measurements",
+              },
+              average: {
+                type: "number",
+                description: "The average value of the measurements",
+              },
+              min: {
+                type: "number",
+                description: "The minimum value of the measurements",
+              },
+              max: {
+                type: "number",
+                description: "The maximum value of the measurements",
               },
             },
           },
@@ -230,6 +227,21 @@ const swaggerDefinition = {
             type: "string",
             description: "Error message stating internal server error.",
             example: "Internal server error.",
+          },
+        },
+      },
+
+      DatabaseErrorResponse: {
+        type: "object",
+        properties: {
+          success: {
+            type: "boolean",
+            example: false,
+          },
+          message: {
+            type: "string",
+            description: "Error message stating internal server error.",
+            example: "Server is busy, please try again later.",
           },
         },
       },
