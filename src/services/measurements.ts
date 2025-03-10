@@ -37,7 +37,7 @@ export class MeasurementQueryBuilder {
   }
 
   private applyFilters(filter: MeasurementFilter) {
-    const conditions: string[] = [];
+    const conditions: Array<String> = [];
     const filterMapping: { [key: string]: any } = {
       "timestamp >= ?": filter.startDate,
       "timestamp <= ?": filter.endDate,
